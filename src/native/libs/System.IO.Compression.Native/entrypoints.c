@@ -79,7 +79,15 @@ static const Entry s_compressionNative[] =
     DllImportEntry(ZSTD_CCtx_setPledgedSrcSize)
     DllImportEntry(ZDICT_trainFromBuffer)
     // xz / lzma
+    DllImportEntry(lzma_code)
+    DllImportEntry(lzma_end)
+    DllImportEntry(lzma_easy_encoder)
+    DllImportEntry(lzma_stream_encoder)
+    DllImportEntry(lzma_easy_buffer_encode)
+    DllImportEntry(lzma_stream_buffer_bound)
     DllImportEntry(lzma_stream_decoder)
+    DllImportEntry(lzma_auto_decoder)
+    DllImportEntry(lzma_stream_buffer_decode)
 #endif // !TARGET_WASM
 };
 

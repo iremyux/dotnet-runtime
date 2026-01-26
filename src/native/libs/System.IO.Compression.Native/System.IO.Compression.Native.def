@@ -53,5 +53,12 @@ EXPORTS
     ZSTD_CCtx_refPrefix
     ZSTD_CCtx_setPledgedSrcSize
     ZDICT_trainFromBuffer
+    lzma_code
+    lzma_end
+    lzma_easy_encoder
+    lzma_stream_encoder
+    lzma_easy_buffer_encode
+    lzma_stream_buffer_bound
     lzma_stream_decoder
-    
+    lzma_auto_decoder
+    lzma_stream_buffer_decode

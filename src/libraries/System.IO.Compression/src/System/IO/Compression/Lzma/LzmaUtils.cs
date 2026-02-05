@@ -6,7 +6,9 @@ namespace System.IO.Compression
     internal static class LzmaUtils
     {
         // LZMA preset constants from lzma/container.h
-        internal const uint PresetDefault = 6;
+        internal const int PresetMin = 0;
+        internal const int PresetMax = 9;
+        internal const int PresetDefault = 6;
         internal const uint PresetLevelMask = 0x1F;
         internal const uint PresetExtreme = 1U << 31;
 

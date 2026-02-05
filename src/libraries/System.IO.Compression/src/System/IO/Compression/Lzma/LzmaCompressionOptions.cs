@@ -7,24 +7,24 @@ namespace System.IO.Compression
     public sealed class LzmaCompressionOptions
     {
         /// <summary>Gets the default compression preset level.</summary>
-        public const int DefaultPreset = 6;
+        public static int DefaultPreset => LzmaUtils.PresetDefault;
 
         /// <summary>Gets the minimum compression preset level.</summary>
-        public const int MinPreset = 0;
+        public static int MinPreset => LzmaUtils.PresetMin;
 
         /// <summary>Gets the maximum compression preset level.</summary>
-        public const int MaxPreset = 9;
+        public static int MaxPreset => LzmaUtils.PresetMax;
 
         /// <summary>Gets the minimum dictionary size in bytes.</summary>
-        public const uint MinDictionarySize = 4096;
+        public static uint MinDictionarySize => LzmaUtils.DictSizeMin;
 
         /// <summary>Gets the maximum dictionary size in bytes (1.5 GiB).</summary>
-        public const uint MaxDictionarySize = (1U << 30) + (1U << 29);
+        public static uint MaxDictionarySize => LzmaUtils.DictSizeMax;
 
         /// <summary>Gets the default dictionary size in bytes (8 MiB).</summary>
-        public const uint DefaultDictionarySize = 1U << 23;
+        public static uint DefaultDictionarySize => LzmaUtils.DictSizeDefault;
 
-        private int _preset = DefaultPreset;
+        private int _preset = LzmaUtils.PresetDefault;
         private uint _dictionarySize;
 
         /// <summary>Initializes a new instance of the <see cref="LzmaCompressionOptions"/> class.</summary>

@@ -7,22 +7,9 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Win32.SafeHandles
 {
-    internal sealed class SafeLzmaEncoderHandle : SafeHandle
+    internal sealed class SafeLzmaHandle : SafeHandle
     {
-        public SafeLzmaEncoderHandle() : base(IntPtr.Zero, true) { }
-
-        protected override bool ReleaseHandle()
-        {
-            Interop.Lzma.lzma_end((LzmaNative.LzmaStream*)handle);
-            return true;
-        }
-
-        public override bool IsInvalid => handle == IntPtr.Zero;
-    }
-
-    internal sealed class SafeLzmaDecoderHandle : SafeHandle
-    {
-        public SafeLzmaDecoderHandle() : base(IntPtr.Zero, true) { }
+        public SafeLzmaHandle() : base(IntPtr.Zero, true) { }
 
         protected override bool ReleaseHandle()
         {

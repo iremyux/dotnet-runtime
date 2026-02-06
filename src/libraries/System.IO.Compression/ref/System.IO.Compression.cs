@@ -90,6 +90,81 @@ namespace System.IO.Compression
         public override System.Threading.Tasks.ValueTask WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override void WriteByte(byte value) { }
     }
+    public enum LzmaCheck
+    {
+        None = 0,
+        Crc32 = 1,
+        Crc64 = 4,
+        Sha256 = 10,
+    }
+    public sealed partial class LzmaCompressionOptions
+    {
+        public LzmaCompressionOptions() { }
+        public static int DefaultPreset { get { throw null; } }
+        public static uint DefaultDictionarySize { get { throw null; } }
+        public static uint MaxDictionarySize { get { throw null; } }
+        public static int MaxPreset { get { throw null; } }
+        public static uint MinDictionarySize { get { throw null; } }
+        public static int MinPreset { get { throw null; } }
+        public System.IO.Compression.LzmaCheck Check { get { throw null; } set { } }
+        public uint DictionarySize { get { throw null; } set { } }
+        public bool Extreme { get { throw null; } set { } }
+        public int Preset { get { throw null; } set { } }
+    }
+    public sealed partial class LzmaDecoder : System.IDisposable
+    {
+        public LzmaDecoder() { }
+        public void Dispose() { }
+    }
+    public sealed partial class LzmaEncoder : System.IDisposable
+    {
+        public LzmaEncoder() { }
+        public LzmaEncoder(int quality) { }
+        public LzmaEncoder(System.IO.Compression.LzmaCompressionOptions compressionOptions) { }
+        public System.Buffers.OperationStatus Compress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesConsumed, out int bytesWritten, bool isFinalBlock) { throw null; }
+        public void Dispose() { }
+        public System.Buffers.OperationStatus Flush(System.Span<byte> destination, out int bytesWritten) { throw null; }
+        public static long GetMaxCompressedLength(long inputLength) { throw null; }
+        public void Reset() { }
+        public static bool TryCompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesWritten) { throw null; }
+        public static bool TryCompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesWritten, int quality) { throw null; }
+    }
+    public sealed partial class LzmaStream : System.IO.Stream
+    {
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionLevel compressionLevel) { }
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionLevel compressionLevel, bool leaveOpen) { }
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode) { }
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode, bool leaveOpen) { }
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.LzmaCompressionOptions compressionOptions, bool leaveOpen = false) { }
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.LzmaDecoder decoder, bool leaveOpen = false) { }
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.LzmaEncoder encoder, bool leaveOpen = false) { }
+        public System.IO.Stream BaseStream { get { throw null; } }
+        public override bool CanRead { get { throw null; } }
+        public override bool CanSeek { get { throw null; } }
+        public override bool CanWrite { get { throw null; } }
+        public override long Length { get { throw null; } }
+        public override long Position { get { throw null; } set { } }
+        public override System.IAsyncResult BeginRead(byte[] buffer, int offset, int count, System.AsyncCallback? callback, object? state) { throw null; }
+        public override System.IAsyncResult BeginWrite(byte[] buffer, int offset, int count, System.AsyncCallback? callback, object? state) { throw null; }
+        protected override void Dispose(bool disposing) { }
+        public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
+        public override int EndRead(System.IAsyncResult asyncResult) { throw null; }
+        public override void EndWrite(System.IAsyncResult asyncResult) { }
+        public override void Flush() { }
+        public override System.Threading.Tasks.Task FlushAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
+        public override int Read(byte[] buffer, int offset, int count) { throw null; }
+        public override int Read(System.Span<byte> buffer) { throw null; }
+        public override System.Threading.Tasks.Task<int> ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public override System.Threading.Tasks.ValueTask<int> ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override int ReadByte() { throw null; }
+        public override long Seek(long offset, System.IO.SeekOrigin origin) { throw null; }
+        public override void SetLength(long value) { }
+        public override void Write(byte[] buffer, int offset, int count) { }
+        public override void Write(System.ReadOnlySpan<byte> buffer) { }
+        public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public override System.Threading.Tasks.ValueTask WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override void WriteByte(byte value) { }
+    }
     public partial class ZipArchive : System.IAsyncDisposable, System.IDisposable
     {
         public ZipArchive(System.IO.Stream stream) { }

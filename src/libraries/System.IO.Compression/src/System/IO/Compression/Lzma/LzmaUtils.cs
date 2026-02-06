@@ -15,16 +15,17 @@ namespace System.IO.Compression
         // Dictionary size constants from lzma/lzma12.h
         internal const uint DictSizeMin = 4096;
         internal const uint DictSizeDefault = 1U << 23; // 8 MiB
-        internal const uint DictSizeMax = (1U << 30) + (1U << 29); // 1.5 GiB
+        internal const uint DictSizeMax = LzmaNative.LzmaMaxDictionarySize;
 
         // Buffer sizes for LZMA operations
         internal const int DefaultInternalBufferSize = (1 << 16) - 16; // 65520 bytes, similar to Brotli/Zstandard
 
         /// <summary>Checks if an LZMA operation result indicates an error.</summary>
-        internal static bool IsError(LzmaReturnCode result) => result != LzmaReturnCode.Ok && result != LzmaReturnCode.StreamEnd;
+        internal static bool IsError(LzmaNative.LzmaRetCode result) =>
+            result != LzmaNative.LzmaRetCode.Ok && result != LzmaNative.LzmaRetCode.StreamEnd;
 
         /// <summary>Throws an exception if the LZMA operation result indicates an error.</summary>
-        internal static void ThrowIfError(LzmaReturnCode result)
+        internal static void ThrowIfError(LzmaNative.LzmaRetCode result)
         {
             if (IsError(result))
             {
@@ -32,86 +33,39 @@ namespace System.IO.Compression
             }
         }
 
-        internal static void ThrowForErrorCode(LzmaReturnCode error)
+        internal static void ThrowForErrorCode(LzmaNative.LzmaRetCode error)
         {
             string message = error switch
             {
-                LzmaReturnCode.MemError => "Memory allocation failed.",
-                LzmaReturnCode.MemlimitError => "Memory usage limit was exceeded.",
-                LzmaReturnCode.FormatError => "The input is not in the expected format.",
-                LzmaReturnCode.OptionsError => "Invalid or unsupported options.",
-                LzmaReturnCode.DataError => "Data is corrupt or incomplete.",
-                LzmaReturnCode.BufError => "No progress is possible (output buffer too small or input exhausted).",
-                LzmaReturnCode.ProgError => "Programming error in the application.",
-                LzmaReturnCode.UnsupportedCheck => "The specified integrity check is not supported.",
-                LzmaReturnCode.GetCheck => "Integrity check type is now available.",
-                LzmaReturnCode.SeekNeeded => "Seek is needed to continue decoding.",
+                LzmaNative.LzmaRetCode.MemError => "Memory allocation failed.",
+                LzmaNative.LzmaRetCode.MemlimitError => "Memory usage limit was exceeded.",
+                LzmaNative.LzmaRetCode.FormatError => "The input is not in the expected format.",
+                LzmaNative.LzmaRetCode.OptionsError => "Invalid or unsupported options.",
+                LzmaNative.LzmaRetCode.DataError => "Data is corrupt or incomplete.",
+                LzmaNative.LzmaRetCode.BufError => "No progress is possible (output buffer too small or input exhausted).",
+                LzmaNative.LzmaRetCode.ProgError => "Programming error in the application.",
+                LzmaNative.LzmaRetCode.UnsupportedCheck => "The specified integrity check is not supported.",
+                LzmaNative.LzmaRetCode.GetCheck => "Integrity check type is now available.",
+                LzmaNative.LzmaRetCode.SeekNeeded => "Seek is needed to continue decoding.",
                 _ => $"Unknown LZMA error: {error}"
             };
 
             throw new IOException(message);
         }
-    }
 
-    /// <summary>Return codes from liblzma functions.</summary>
-    internal enum LzmaReturnCode
-    {
-        /// <summary>Operation completed successfully.</summary>
-        Ok = 0,
-
-        /// <summary>End of stream was reached.</summary>
-        StreamEnd = 1,
-
-        /// <summary>Input stream has no integrity check.</summary>
-        NoCheck = 2,
-
-        /// <summary>Cannot calculate the integrity check.</summary>
-        UnsupportedCheck = 3,
-
-        /// <summary>Integrity check type is now available.</summary>
-        GetCheck = 4,
-
-        /// <summary>Memory allocation failed.</summary>
-        MemError = 5,
-
-        /// <summary>Memory usage limit was exceeded.</summary>
-        MemlimitError = 6,
-
-        /// <summary>File format not recognized.</summary>
-        FormatError = 7,
-
-        /// <summary>Invalid or unsupported options.</summary>
-        OptionsError = 8,
-
-        /// <summary>Data is corrupt.</summary>
-        DataError = 9,
-
-        /// <summary>No progress is possible.</summary>
-        BufError = 10,
-
-        /// <summary>Programming error.</summary>
-        ProgError = 11,
-
-        /// <summary>Seek is needed.</summary>
-        SeekNeeded = 12
-    }
-
-    /// <summary>Action codes for lzma_code function.</summary>
-    internal enum LzmaAction
-    {
-        /// <summary>Continue encoding/decoding.</summary>
-        Run = 0,
-
-        /// <summary>Make all buffered data available at output.</summary>
-        SyncFlush = 1,
-
-        /// <summary>Flush and reset encoder state (compression only).</summary>
-        FullFlush = 2,
-
-        /// <summary>Flush and set end-of-stream marker (compression only).</summary>
-        FullBarrier = 4,
-
-        /// <summary>Finish the encoding/decoding.</summary>
-        Finish = 3
+        /// <summary>Gets the LZMA preset level from a CompressionLevel value.</summary>
+        internal static int GetPresetFromCompressionLevel(CompressionLevel compressionLevel) =>
+            compressionLevel switch
+            {
+                // LZMA presets range from 0-9:
+                // 0-3: Fast compression with lower memory usage
+                // 4-6: Balanced compression (default is 6)
+                // 7-9: Maximum compression with higher memory usage
+                CompressionLevel.NoCompression => PresetMin,
+                CompressionLevel.Fastest => 1,
+                CompressionLevel.Optimal => PresetDefault,
+                CompressionLevel.SmallestSize => PresetMax,
+                _ => throw new ArgumentOutOfRangeException(nameof(compressionLevel), compressionLevel, SR.ArgumentOutOfRange_Enum)
+            };
     }
 }

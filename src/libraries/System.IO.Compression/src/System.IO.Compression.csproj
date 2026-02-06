@@ -15,6 +15,12 @@
 
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' != ''">
     <Compile Include="$(CommonPath)Interop\Interop.zlib.cs" />
+    <Compile Include="$(CommonPath)Interop\Interop.Lzma.cs"
+             Link="Common\Interop\Interop.Lzma.cs" />
+    <Compile Include="$(CommonPath)Microsoft\Win32\SafeHandles\SafeLzmaHandle.cs"
+             Link="Common\Microsoft\Win32\SafeHandles\SafeLzmaHandle.cs" />
+    <Compile Include="$(CommonPath)System\IO\Compression\LzmaNative.cs"
+             Link="Common\System\IO\Compression\LzmaNative.cs" />
     <Compile Include="$(SharedOpenSourcePath)System\IO\Compression\ZipArchive.cs" />
     <Compile Include="$(SharedOpenSourcePath)System\IO\Compression\ZipArchive.Async.cs" />
     <Compile Include="$(SharedOpenSourcePath)System\IO\Compression\ZipArchiveEntry.cs" />
@@ -55,6 +61,13 @@
     <Compile Include="System\IO\Compression\ZLibCompressionOptions.cs" />
     <Compile Include="System\IO\Compression\ZLibStream.cs" />
     <Compile Include="System\IO\Compression\ZipCompressionMethod.cs" />
+    <Compile Include="System\IO\Compression\Lzma\LzmaCompressionOptions.cs" />
+    <Compile Include="System\IO\Compression\Lzma\LzmaDecoder.cs" />
+    <Compile Include="System\IO\Compression\Lzma\LzmaEncoder.cs" />
+    <Compile Include="System\IO\Compression\Lzma\LzmaStream.cs" />
+    <Compile Include="System\IO\Compression\Lzma\LzmaStream.Compress.cs" />
+    <Compile Include="System\IO\Compression\Lzma\LzmaStream.Decompress.cs" />
+    <Compile Include="System\IO\Compression\Lzma\LzmaUtils.cs" />
     <Compile Include="$(CommonPath)System\Obsoletions.cs"
              Link="Common\System\Obsoletions.cs" />
   </ItemGroup>

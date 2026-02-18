@@ -13,9 +13,9 @@ namespace System.IO.Compression
         internal const uint PresetExtreme = 1U << 31;
 
         // Dictionary size constants from lzma/lzma12.h
-        internal const uint DictSizeMin = 4096;
-        internal const uint DictSizeDefault = 1U << 23; // 8 MiB
-        internal const uint DictSizeMax = LzmaNative.LzmaMaxDictionarySize;
+        internal const int DictSizeMin = 4096;
+        internal const int DictSizeDefault = 1 << 23; // 8 MiB
+        internal const int DictSizeMax = LzmaNative.LzmaMaxDictionarySize;
 
         // Buffer sizes for LZMA operations
         internal const int DefaultInternalBufferSize = (1 << 16) - 16; // 65520 bytes, similar to Brotli/Zstandard

@@ -101,13 +101,13 @@ namespace System.IO.Compression
     {
         public LzmaCompressionOptions() { }
         public static int DefaultPreset { get { throw null; } }
-        public static uint DefaultDictionarySize { get { throw null; } }
-        public static uint MaxDictionarySize { get { throw null; } }
+        public static int DefaultDictionarySize { get { throw null; } }
+        public static int MaxDictionarySize { get { throw null; } }
         public static int MaxPreset { get { throw null; } }
-        public static uint MinDictionarySize { get { throw null; } }
+        public static int MinDictionarySize { get { throw null; } }
         public static int MinPreset { get { throw null; } }
         public System.IO.Compression.LzmaCheck Check { get { throw null; } set { } }
-        public uint DictionarySize { get { throw null; } set { } }
+        public int DictionarySize { get { throw null; } set { } }
         public bool Extreme { get { throw null; } set { } }
         public int Preset { get { throw null; } set { } }
     }

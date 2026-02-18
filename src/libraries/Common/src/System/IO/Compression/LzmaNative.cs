@@ -12,7 +12,7 @@ namespace System.IO.Compression
     internal static class LzmaNative
     {
         /// <summary>Maximum dictionary size (1.5 GiB).</summary>
-        internal const uint LzmaMaxDictionarySize = (1U << 30) + (1U << 29);
+        internal const int LzmaMaxDictionarySize = (1 << 30) + (1 << 29);
 
         /// <summary>Return codes from liblzma functions.</summary>
         internal enum LzmaRetCode : uint

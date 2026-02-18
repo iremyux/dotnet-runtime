@@ -16,16 +16,16 @@ namespace System.IO.Compression
         public static int MaxPreset => LzmaUtils.PresetMax;
 
         /// <summary>Gets the minimum dictionary size in bytes.</summary>
-        public static uint MinDictionarySize => LzmaUtils.DictSizeMin;
+        public static int MinDictionarySize => LzmaUtils.DictSizeMin;
 
         /// <summary>Gets the maximum dictionary size in bytes (1.5 GiB).</summary>
-        public static uint MaxDictionarySize => LzmaUtils.DictSizeMax;
+        public static int MaxDictionarySize => LzmaUtils.DictSizeMax;
 
         /// <summary>Gets the default dictionary size in bytes (8 MiB).</summary>
-        public static uint DefaultDictionarySize => LzmaUtils.DictSizeDefault;
+        public static int DefaultDictionarySize => LzmaUtils.DictSizeDefault;
 
         private int _preset = LzmaUtils.PresetDefault;
-        private uint _dictionarySize;
+        private int _dictionarySize;
 
         /// <summary>Initializes a new instance of the <see cref="LzmaCompressionOptions"/> class.</summary>
         public LzmaCompressionOptions()
@@ -89,7 +89,7 @@ namespace System.IO.Compression
         /// or 0 to use the default size determined by the preset.
         /// </remarks>
         /// <exception cref="ArgumentOutOfRangeException">The value is not 0 and is not between <see cref="MinDictionarySize"/> and <see cref="MaxDictionarySize"/>.</exception>
-        public uint DictionarySize
+        public int DictionarySize
         {
             get => _dictionarySize;
             set

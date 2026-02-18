@@ -2,14 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Data;
 using System.IO.Compression;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
-using System.Security;
-using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Win32.SafeHandles;
 
 internal static partial class Interop

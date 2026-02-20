@@ -15,7 +15,7 @@ internal static partial class Interop
 
         [LibraryImport(Libraries.CompressionNative)]
         internal static unsafe partial void lzma_end(LzmaNative.LzmaStream* strm);
-        
+
         [LibraryImport(Libraries.CompressionNative)]
         internal static unsafe partial LzmaNative.LzmaRetCode lzma_easy_encoder(LzmaNative.LzmaStream* strm, uint preset, LzmaNative.LzmaCheck check);
 
@@ -29,7 +29,7 @@ internal static partial class Interop
         internal static unsafe partial ulong lzma_stream_buffer_bound(nuint uncompressedSize);
 
         [LibraryImport(Libraries.CompressionNative)]
-        internal static unsafe partial LzmaNative.LzmaRetCode lzma_stream_decoder(LzmaNative.LzmaStream* strm, ulong memlimit, uint flags); 
+        internal static unsafe partial LzmaNative.LzmaRetCode lzma_stream_decoder(LzmaNative.LzmaStream* strm, ulong memlimit, uint flags);
 
         [LibraryImport(Libraries.CompressionNative)]
         internal static unsafe partial LzmaNative.LzmaRetCode lzma_auto_decoder(LzmaNative.LzmaStream* strm, ulong memlimit, uint flags);

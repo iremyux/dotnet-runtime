@@ -12,10 +12,17 @@ namespace System.IO.Compression
         internal const uint PresetLevelMask = 0x1F;
         internal const uint PresetExtreme = 1U << 31;
 
-        // Dictionary size constants from lzma/lzma12.h
-        internal const int DictSizeMin = 4096;
-        internal const int DictSizeDefault = 1 << 23; // 8 MiB
-        internal const int DictSizeMax = LzmaNative.LzmaMaxDictionarySize;
+        // Window log constants from lzma/lzma12.h
+        // In LZMA, the window size (historically called "dictionary size") determines
+        // how many bytes of recently processed uncompressed data the compressor can
+        // reference for finding repeated patterns. This is the same concept as WindowLog
+        // in Zstandard, expressed as base 2 logarithm (e.g. 23 means 2^23 = 8 MiB).
+        internal const int WindowLogMin = 12;              // 2^12 = 4 KiB
+        internal const int WindowLogDefault = 23;           // 2^23 = 8 MiB
+        internal const int WindowLogMax = 30;               // 2^30 = 1 GiB
+
+        /// <summary>Converts a WindowLog value (base 2 logarithm) to the actual window size in bytes.</summary>
+        internal static int WindowSizeFromLog(int windowLog) => 1 << windowLog;
 
         // Buffer sizes for LZMA operations
         internal const int DefaultInternalBufferSize = (1 << 16) - 16; // 65520 bytes, similar to Brotli/Zstandard

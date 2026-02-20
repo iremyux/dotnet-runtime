@@ -15,17 +15,17 @@ namespace System.IO.Compression
         /// <summary>Gets the maximum compression preset level.</summary>
         public static int MaxPreset => LzmaUtils.PresetMax;
 
-        /// <summary>Gets the minimum dictionary size in bytes.</summary>
-        public static int MinDictionarySize => LzmaUtils.DictSizeMin;
+        /// <summary>Gets the minimum window log value.</summary>
+        public static int MinWindowLog => LzmaUtils.WindowLogMin;
 
-        /// <summary>Gets the maximum dictionary size in bytes (1.5 GiB).</summary>
-        public static int MaxDictionarySize => LzmaUtils.DictSizeMax;
+        /// <summary>Gets the maximum window log value.</summary>
+        public static int MaxWindowLog => LzmaUtils.WindowLogMax;
 
-        /// <summary>Gets the default dictionary size in bytes (8 MiB).</summary>
-        public static int DefaultDictionarySize => LzmaUtils.DictSizeDefault;
+        /// <summary>Gets the default window log value.</summary>
+        public static int DefaultWindowLog => LzmaUtils.WindowLogDefault;
 
         private int _preset = LzmaUtils.PresetDefault;
-        private int _dictionarySize;
+        private int _windowLog;
 
         /// <summary>Initializes a new instance of the <see cref="LzmaCompressionOptions"/> class.</summary>
         public LzmaCompressionOptions()
@@ -79,28 +79,29 @@ namespace System.IO.Compression
         /// <exception cref="ArgumentOutOfRangeException">The value is not a valid <see cref="LzmaCheck"/> value.</exception>
         public LzmaCheck Check { get; set; } = LzmaCheck.Crc64;
 
-        /// <summary>Gets or sets the dictionary size in bytes.</summary>
-        /// <value>The dictionary size in bytes. A value of 0 means the default size based on the preset will be used.</value>
+        /// <summary>Gets or sets the window size, expressed as base 2 logarithm.</summary>
+        /// <value>The window size for compression, expressed as base 2 logarithm. A value of 0 means the default size based on the preset will be used.</value>
         /// <remarks>
-        /// The dictionary size determines how many bytes of recently processed uncompressed data
-        /// is kept in memory for finding repeated patterns. Larger dictionaries can improve
+        /// The window size determines how many bytes of recently processed uncompressed data
+        /// is kept in memory for finding repeated patterns. Larger windows can improve
         /// compression ratios but require more memory for both compression and decompression.
-        /// The valid range is from <see cref="MinDictionarySize"/> to <see cref="MaxDictionarySize"/>,
+        /// This is equivalent to what the LZMA format calls "dictionary size".
+        /// The valid range is from <see cref="MinWindowLog"/> to <see cref="MaxWindowLog"/>,
         /// or 0 to use the default size determined by the preset.
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">The value is not 0 and is not between <see cref="MinDictionarySize"/> and <see cref="MaxDictionarySize"/>.</exception>
-        public int DictionarySize
+        /// <exception cref="ArgumentOutOfRangeException">The value is not 0 and is not between <see cref="MinWindowLog"/> and <see cref="MaxWindowLog"/>.</exception>
+        public int WindowLog
         {
-            get => _dictionarySize;
+            get => _windowLog;
             set
             {
                 if (value != 0)
                 {
-                    ArgumentOutOfRangeException.ThrowIfLessThan(value, MinDictionarySize, nameof(value));
-                    ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxDictionarySize, nameof(value));
+                    ArgumentOutOfRangeException.ThrowIfLessThan(value, MinWindowLog, nameof(value));
+                    ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxWindowLog, nameof(value));
                 }
 
-                _dictionarySize = value;
+                _windowLog = value;
             }
         }
 

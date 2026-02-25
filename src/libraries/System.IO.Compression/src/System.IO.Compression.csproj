@@ -21,6 +21,8 @@
              Link="Common\Microsoft\Win32\SafeHandles\SafeLzmaHandle.cs" />
     <Compile Include="$(CommonPath)System\IO\Compression\LzmaNative.cs"
              Link="Common\System\IO\Compression\LzmaNative.cs" />
+    <Compile Include="$(CommonPath)System\Net\ArrayBuffer.cs"
+             Link="Common\System\Net\ArrayBuffer.cs" />
     <Compile Include="$(SharedOpenSourcePath)System\IO\Compression\ZipArchive.cs" />
     <Compile Include="$(SharedOpenSourcePath)System\IO\Compression\ZipArchive.Async.cs" />
     <Compile Include="$(SharedOpenSourcePath)System\IO\Compression\ZipArchiveEntry.cs" />

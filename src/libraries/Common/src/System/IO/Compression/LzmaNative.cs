@@ -200,10 +200,7 @@ namespace System.IO.Compression
             /// <summary>Extension size high bits.</summary>
             public uint ExtSizeHigh;
 
-            // Reserved members for ABI compatibility
-            private void* _reservedPtr1;
-            private void* _reservedPtr2;
-            private uint _reservedInt3;
+            // Reserved members for ABI compatibility (must match lzma_options_lzma layout)
             private uint _reservedInt4;
             private uint _reservedInt5;
             private uint _reservedInt6;
@@ -213,6 +210,8 @@ namespace System.IO.Compression
             private uint _reservedEnum2;
             private uint _reservedEnum3;
             private uint _reservedEnum4;
+            private void* _reservedPtr1;
+            private void* _reservedPtr2;
         }
     }
 }

@@ -22,6 +22,10 @@ internal static partial class Interop
         [LibraryImport(Libraries.CompressionNative)]
         internal static unsafe partial LzmaNative.LzmaRetCode lzma_stream_encoder(LzmaNative.LzmaStream* strm, LzmaNative.LzmaFilter* filters, LzmaNative.LzmaCheck check);
 
+        /// <summary>Fills in an lzma_options_lzma structure with the given preset level. Returns 0 on success, non-zero if the preset is unsupported.</summary>
+        [LibraryImport(Libraries.CompressionNative)]
+        internal static unsafe partial uint lzma_lzma_preset(LzmaNative.LzmaOptionsLzma* options, uint preset);
+
         [LibraryImport(Libraries.CompressionNative)]
         internal static unsafe partial LzmaNative.LzmaRetCode lzma_easy_buffer_encode(uint preset, LzmaNative.LzmaCheck check, void* allocator, byte* inBuf, nuint inSize, byte* outBuf, nuint* outPos, nuint outSize);
 

@@ -136,6 +136,12 @@ namespace System.IO.Compression
             private uint _reservedEnum2;
         }
 
+        /// <summary>LZMA2 filter ID.</summary>
+        internal const ulong FilterLzma2 = 0x21;
+
+        /// <summary>Sentinel value used to terminate a filter chain.</summary>
+        internal const ulong VliUnknown = ulong.MaxValue;
+
         /// <summary>
         /// Filter options structure for lzma_stream_encoder.
         /// </summary>
@@ -147,6 +153,66 @@ namespace System.IO.Compression
 
             /// <summary>Filter-specific options (can be NULL for default options).</summary>
             public void* Options;
+        }
+
+        /// <summary>
+        /// Options for the LZMA1 and LZMA2 filters, corresponding to lzma_options_lzma in lzma/lzma12.h.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        internal unsafe struct LzmaOptionsLzma
+        {
+            /// <summary>Dictionary size in bytes (the window size).</summary>
+            public uint DictSize;
+
+            /// <summary>Pointer to an initial dictionary (usually null).</summary>
+            public byte* PresetDict;
+
+            /// <summary>Size of the preset dictionary.</summary>
+            public uint PresetDictSize;
+
+            /// <summary>Number of literal context bits (lc).</summary>
+            public uint Lc;
+
+            /// <summary>Number of literal position bits (lp).</summary>
+            public uint Lp;
+
+            /// <summary>Number of position bits (pb).</summary>
+            public uint Pb;
+
+            /// <summary>Compression mode (lzma_mode enum).</summary>
+            public uint Mode;
+
+            /// <summary>Nice match length.</summary>
+            public uint NiceLen;
+
+            /// <summary>Match finder algorithm (lzma_match_finder enum).</summary>
+            public uint Mf;
+
+            /// <summary>Maximum search depth.</summary>
+            public uint Depth;
+
+            /// <summary>Extension flags.</summary>
+            public uint ExtFlags;
+
+            /// <summary>Extension size low bits.</summary>
+            public uint ExtSizeLow;
+
+            /// <summary>Extension size high bits.</summary>
+            public uint ExtSizeHigh;
+
+            // Reserved members for ABI compatibility
+            private void* _reservedPtr1;
+            private void* _reservedPtr2;
+            private uint _reservedInt3;
+            private uint _reservedInt4;
+            private uint _reservedInt5;
+            private uint _reservedInt6;
+            private uint _reservedInt7;
+            private uint _reservedInt8;
+            private uint _reservedEnum1;
+            private uint _reservedEnum2;
+            private uint _reservedEnum3;
+            private uint _reservedEnum4;
         }
     }
 }

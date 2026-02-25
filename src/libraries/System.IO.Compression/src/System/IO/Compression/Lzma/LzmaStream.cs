@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -187,18 +188,10 @@ namespace System.IO.Compression
             {
                 _encoder?.Dispose();
             }
-            else
-            {
-                _encoder?.Reset();
-            }
 
             if (_decoderOwned)
             {
                 _decoder?.Dispose();
-            }
-            else
-            {
-                _decoder?.Reset();
             }
 
             // only return the buffer if no read/write operation is active

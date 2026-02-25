@@ -32,7 +32,7 @@ namespace System.IO.Compression
             _mode = CompressionMode.Compress;
             _leaveOpen = leaveOpen;
 
-            _encoder = new LzmaEncoder(LzmaUtils.GetPresetFromCompressionLevel(compressionLevel));
+            _encoder = new LzmaEncoder(LzmaUtils.GetQualityFromCompressionLevel(compressionLevel));
         }
 
         /// <summary>Initializes a new instance of the <see cref="LzmaStream" /> class by using the specified stream, compression options, and optionally leaves the stream open.</summary>

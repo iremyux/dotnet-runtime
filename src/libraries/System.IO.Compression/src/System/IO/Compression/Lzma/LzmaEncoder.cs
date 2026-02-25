@@ -29,7 +29,7 @@ namespace System.IO.Compression
 
             try
             {
-                SetQuality(_handle, LzmaUtils.PresetDefault);
+                SetQuality(_handle, LzmaUtils.QualityDefault, LzmaChecksum.Crc64);
             }
             catch
             {
@@ -49,7 +49,28 @@ namespace System.IO.Compression
 
             try
             {
-                SetQuality(_handle, quality);
+                SetQuality(_handle, quality, LzmaChecksum.Crc64);
+            }
+            catch
+            {
+                _handle.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="LzmaEncoder"/> class with the specified quality and window size.</summary>
+        /// <param name="quality">The compression quality level (0-9, where higher values provide better compression but are slower).</param>
+        /// <param name="windowLog">The window size for compression, expressed as base 2 logarithm.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="quality"/> is not between 0 and 9, or <paramref name="windowLog"/> is not between the minimum and maximum allowed values.</exception>
+        /// <exception cref="IOException">Failed to create the <see cref="LzmaEncoder"/> instance.</exception>
+        public LzmaEncoder(int quality, int windowLog)
+        {
+            _disposed = false;
+            InitializeEncoder();
+
+            try
+            {
+                SetQualityWithWindowLog(_handle, quality, windowLog, LzmaChecksum.Crc64);
             }
             catch
             {
@@ -72,7 +93,18 @@ namespace System.IO.Compression
 
             try
             {
-                SetQuality(_handle, (int)compressionOptions.GetEffectivePreset(), compressionOptions.Check);
+                int quality = (int)compressionOptions.GetEffectiveQuality();
+                LzmaChecksum checksum = compressionOptions.Checksum;
+                int windowLog = compressionOptions.WindowLog;
+
+                if (windowLog != 0)
+                {
+                    SetQualityWithWindowLog(_handle, quality, windowLog, checksum);
+                }
+                else
+                {
+                    SetQuality(_handle, quality, checksum);
+                }
             }
             catch
             {
@@ -87,7 +119,7 @@ namespace System.IO.Compression
             _handle = new SafeLzmaHandle();
         }
 
-        internal static void SetQuality(SafeLzmaHandle handle, int quality, LzmaCheck check = LzmaCheck.Crc64)
+        internal static void SetQuality(SafeLzmaHandle handle, int quality, LzmaChecksum checksum = LzmaChecksum.Crc64)
         {
             Debug.Assert(handle is not null);
 
@@ -98,7 +130,42 @@ namespace System.IO.Compression
                 LzmaNative.LzmaRetCode ret = Interop.Lzma.lzma_easy_encoder(
                     handle.GetStreamPointer(),
                     (uint)quality,
-                    (LzmaNative.LzmaCheck)check);
+                    (LzmaNative.LzmaCheck)checksum);
+
+                if (ret != LzmaNative.LzmaRetCode.Ok)
+                {
+                    LzmaUtils.ThrowForErrorCode(ret);
+                }
+            }
+        }
+
+        internal static void SetQualityWithWindowLog(SafeLzmaHandle handle, int quality, int windowLog, LzmaChecksum checksum = LzmaChecksum.Crc64)
+        {
+            Debug.Assert(handle is not null);
+
+            ValidateQuality(quality);
+            ValidateWindowLog(windowLog);
+
+            unsafe
+            {
+                LzmaNative.LzmaOptionsLzma options;
+                if (Interop.Lzma.lzma_lzma_preset(&options, (uint)quality) != 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(quality));
+                }
+
+                options.DictSize = (uint)LzmaUtils.WindowSizeFromLog(windowLog);
+
+                LzmaNative.LzmaFilter* filters = stackalloc LzmaNative.LzmaFilter[2];
+                filters[0].Id = LzmaNative.FilterLzma2;
+                filters[0].Options = &options;
+                filters[1].Id = LzmaNative.VliUnknown;
+                filters[1].Options = null;
+
+                LzmaNative.LzmaRetCode ret = Interop.Lzma.lzma_stream_encoder(
+                    handle.GetStreamPointer(),
+                    filters,
+                    (LzmaNative.LzmaCheck)checksum);
 
                 if (ret != LzmaNative.LzmaRetCode.Ok)
                 {
@@ -122,6 +189,11 @@ namespace System.IO.Compression
 
             bytesConsumed = 0;
             bytesWritten = 0;
+
+            if (_finished)
+            {
+                return OperationStatus.Done;
+            }
 
             if (source.IsEmpty && !isFinalBlock)
             {
@@ -227,7 +299,7 @@ namespace System.IO.Compression
         /// <returns><see langword="true" /> on success; <see langword="false" /> if the destination buffer is too small.</returns>
         public static bool TryCompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten)
         {
-            return TryCompress(source, destination, out bytesWritten, LzmaUtils.PresetDefault);
+            return TryCompress(source, destination, out bytesWritten, LzmaUtils.QualityDefault);
         }
 
         /// <summary>Attempts to compress the specified data with the specified quality.</summary>
@@ -278,8 +350,14 @@ namespace System.IO.Compression
 
         private static void ValidateQuality(int quality)
         {
-            ArgumentOutOfRangeException.ThrowIfLessThan(quality, LzmaUtils.PresetMin, nameof(quality));
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(quality, LzmaUtils.PresetMax, nameof(quality));
+            ArgumentOutOfRangeException.ThrowIfLessThan(quality, LzmaUtils.QualityMin, nameof(quality));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(quality, LzmaUtils.QualityMax, nameof(quality));
+        }
+
+        private static void ValidateWindowLog(int windowLog)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(windowLog, LzmaUtils.WindowLogMin, nameof(windowLog));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(windowLog, LzmaUtils.WindowLogMax, nameof(windowLog));
         }
     }
 }

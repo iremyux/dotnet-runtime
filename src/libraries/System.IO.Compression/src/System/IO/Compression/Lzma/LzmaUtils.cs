@@ -5,12 +5,12 @@ namespace System.IO.Compression
 {
     internal static class LzmaUtils
     {
-        // LZMA preset constants from lzma/container.h
-        internal const int PresetMin = 0;
-        internal const int PresetMax = 9;
-        internal const int PresetDefault = 6;
-        internal const uint PresetLevelMask = 0x1F;
-        internal const uint PresetExtreme = 1U << 31;
+        // LZMA quality constants from lzma/container.h
+        internal const int QualityMin = 0;
+        internal const int QualityMax = 9;
+        internal const int QualityDefault = 6;
+        internal const uint QualityLevelMask = 0x1F;
+        internal const uint QualityExtreme = 1U << 31;
 
         // Window log constants from lzma/lzma12.h
         // In LZMA, the window size (historically called "dictionary size") determines
@@ -60,18 +60,18 @@ namespace System.IO.Compression
             throw new IOException(message);
         }
 
-        /// <summary>Gets the LZMA preset level from a CompressionLevel value.</summary>
-        internal static int GetPresetFromCompressionLevel(CompressionLevel compressionLevel) =>
+        /// <summary>Gets the LZMA quality level from a CompressionLevel value.</summary>
+        internal static int GetQualityFromCompressionLevel(CompressionLevel compressionLevel) =>
             compressionLevel switch
             {
-                // LZMA presets range from 0-9:
+                // LZMA quality levels range from 0-9:
                 // 0-3: Fast compression with lower memory usage
                 // 4-6: Balanced compression (default is 6)
                 // 7-9: Maximum compression with higher memory usage
-                CompressionLevel.NoCompression => PresetMin,
+                CompressionLevel.NoCompression => QualityMin,
                 CompressionLevel.Fastest => 1,
-                CompressionLevel.Optimal => PresetDefault,
-                CompressionLevel.SmallestSize => PresetMax,
+                CompressionLevel.Optimal => QualityDefault,
+                CompressionLevel.SmallestSize => QualityMax,
                 _ => throw new ArgumentOutOfRangeException(nameof(compressionLevel), compressionLevel, SR.ArgumentOutOfRange_Enum)
             };
     }

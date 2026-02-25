@@ -90,7 +90,7 @@ namespace System.IO.Compression
         public override System.Threading.Tasks.ValueTask WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override void WriteByte(byte value) { }
     }
-    public enum LzmaCheck
+    public enum LzmaChecksum
     {
         None = 0,
         Crc32 = 1,
@@ -100,16 +100,16 @@ namespace System.IO.Compression
     public sealed partial class LzmaCompressionOptions
     {
         public LzmaCompressionOptions() { }
-        public static int DefaultPreset { get { throw null; } }
+        public static int DefaultQuality { get { throw null; } }
         public static int DefaultWindowLog { get { throw null; } }
-        public static int MaxPreset { get { throw null; } }
+        public static int MaxQuality { get { throw null; } }
         public static int MaxWindowLog { get { throw null; } }
-        public static int MinPreset { get { throw null; } }
+        public static int MinQuality { get { throw null; } }
         public static int MinWindowLog { get { throw null; } }
-        public System.IO.Compression.LzmaCheck Check { get { throw null; } set { } }
+        public System.IO.Compression.LzmaChecksum Checksum { get { throw null; } set { } }
         public int WindowLog { get { throw null; } set { } }
         public bool Extreme { get { throw null; } set { } }
-        public int Preset { get { throw null; } set { } }
+        public int Quality { get { throw null; } set { } }
     }
     public sealed partial class LzmaDecoder : System.IDisposable
     {
@@ -122,6 +122,7 @@ namespace System.IO.Compression
     {
         public LzmaEncoder() { }
         public LzmaEncoder(int quality) { }
+        public LzmaEncoder(int quality, int windowLog) { }
         public LzmaEncoder(System.IO.Compression.LzmaCompressionOptions compressionOptions) { }
         public System.Buffers.OperationStatus Compress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesConsumed, out int bytesWritten, bool isFinalBlock) { throw null; }
         public void Dispose() { }

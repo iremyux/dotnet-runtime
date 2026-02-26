@@ -108,7 +108,7 @@ namespace System.IO.Compression
         public static int MinWindowLog { get { throw null; } }
         public System.IO.Compression.LzmaChecksum Checksum { get { throw null; } set { } }
         public int WindowLog { get { throw null; } set { } }
-        public bool Extreme { get { throw null; } set { } }
+        public bool EnableExtreme { get { throw null; } set { } }
         public int Quality { get { throw null; } set { } }
     }
     public sealed partial class LzmaDecoder : System.IDisposable

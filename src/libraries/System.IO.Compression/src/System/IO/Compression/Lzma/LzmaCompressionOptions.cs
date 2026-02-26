@@ -55,15 +55,15 @@ namespace System.IO.Compression
             }
         }
 
-        /// <summary>Gets or sets whether to use extreme compression mode.</summary>
-        /// <value><see langword="true"/> to use extreme compression; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
+        /// <summary>Gets or sets whether to enable extreme compression mode.</summary>
+        /// <value><see langword="true"/> to enable extreme compression; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
         /// <remarks>
         /// Extreme mode modifies the preset to make encoding significantly slower
         /// while improving the compression ratio only marginally. This is useful
         /// when you don't mind spending extra time to get the smallest result possible.
         /// Extreme mode does not significantly affect decoder memory usage.
         /// </remarks>
-        public bool Extreme { get; set; }
+        public bool EnableExtreme { get; set; }
 
         /// <summary>Gets or sets the integrity checksum type for the compressed data.</summary>
         /// <value>The integrity checksum type. The default is <see cref="LzmaChecksum.Crc64"/>.</value>
@@ -109,7 +109,7 @@ namespace System.IO.Compression
         internal uint GetEffectiveQuality()
         {
             uint quality = (uint)_quality;
-            if (Extreme)
+            if (EnableExtreme)
             {
                 quality |= LzmaUtils.QualityExtreme;
             }

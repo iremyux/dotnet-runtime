@@ -336,6 +336,56 @@ namespace System.IO.Compression
             }
         }
 
+        /// <summary>Attempts to compress the specified data with the specified quality and window size.</summary>
+        /// <param name="source">The data to compress.</param>
+        /// <param name="destination">The buffer to write the compressed data to.</param>
+        /// <param name="bytesWritten">When this method returns <see langword="true" />, contains the number of bytes written to the destination.</param>
+        /// <param name="quality">The compression quality level (0-9).</param>
+        /// <param name="windowLog">The window size for compression, expressed as base 2 logarithm.</param>
+        /// <returns><see langword="true" /> on success; <see langword="false" /> if the destination buffer is too small.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="quality"/> is out of the valid range, or <paramref name="windowLog"/> is not between the minimum and maximum allowed values.</exception>
+        public static bool TryCompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten, int quality, int windowLog)
+        {
+            bytesWritten = 0;
+            ValidateQuality(quality);
+            ValidateWindowLog(windowLog);
+
+            unsafe
+            {
+                LzmaNative.LzmaOptionsLzma options;
+                if (Interop.Lzma.lzma_lzma_preset(&options, (uint)quality) != 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(quality));
+                }
+
+                options.DictSize = (uint)LzmaUtils.WindowSizeFromLog(windowLog);
+
+                LzmaNative.LzmaFilter* filters = stackalloc LzmaNative.LzmaFilter[2];
+                filters[0].Id = LzmaNative.FilterLzma2;
+                filters[0].Options = &options;
+                filters[1].Id = LzmaNative.VliUnknown;
+                filters[1].Options = null;
+
+                fixed (byte* inBytes = &MemoryMarshal.GetReference(source))
+                fixed (byte* outBytes = &MemoryMarshal.GetReference(destination))
+                {
+                    nuint outPos = 0;
+                    LzmaNative.LzmaRetCode ret = Interop.Lzma.lzma_stream_buffer_encode(
+                        filters,
+                        LzmaNative.LzmaCheck.Crc64,
+                        null,
+                        inBytes,
+                        (nuint)source.Length,
+                        outBytes,
+                        &outPos,
+                        (nuint)destination.Length);
+
+                    bytesWritten = (int)outPos;
+                    return ret == LzmaNative.LzmaRetCode.Ok;
+                }
+            }
+        }
+
         /// <summary>Releases all resources used by the <see cref="LzmaEncoder"/>.</summary>
         public void Dispose()
         {

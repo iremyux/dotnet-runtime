@@ -18,10 +18,7 @@ namespace System.IO.Compression
         private readonly CompressionMode _mode;
         private volatile bool _activeRwOperation;
 
-        // Tracks whether the encoder/decoder are owned by this stream instance
-        // When owned, they are disposed; when not owned, they are reset
-        private bool _encoderOwned = true;
-        private bool _decoderOwned = true;
+
 
         [MemberNotNull(nameof(_stream))]
         [MemberNotNull(nameof(_buffer))]
@@ -184,15 +181,8 @@ namespace System.IO.Compression
         {
             _stream = null!;
 
-            if (_encoderOwned)
-            {
-                _encoder?.Dispose();
-            }
-
-            if (_decoderOwned)
-            {
-                _decoder?.Dispose();
-            }
+            _encoder?.Dispose();
+            _decoder?.Dispose();
 
             // only return the buffer if no read/write operation is active
             if (!Interlocked.Exchange(ref _activeRwOperation, true))

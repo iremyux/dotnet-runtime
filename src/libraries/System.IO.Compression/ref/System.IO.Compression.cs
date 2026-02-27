@@ -139,8 +139,6 @@ namespace System.IO.Compression
         public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode) { }
         public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode, bool leaveOpen) { }
         public LzmaStream(System.IO.Stream stream, System.IO.Compression.LzmaCompressionOptions compressionOptions, bool leaveOpen = false) { }
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.LzmaDecoder decoder, bool leaveOpen = false) { }
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.LzmaEncoder encoder, bool leaveOpen = false) { }
         public System.IO.Stream BaseStream { get { throw null; } }
         public override bool CanRead { get { throw null; } }
         public override bool CanSeek { get { throw null; } }

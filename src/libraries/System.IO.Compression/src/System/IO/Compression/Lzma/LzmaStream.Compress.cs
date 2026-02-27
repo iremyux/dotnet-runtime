@@ -52,24 +52,6 @@ namespace System.IO.Compression
             _encoder = new LzmaEncoder(compressionOptions);
         }
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaStream" /> class by using the specified stream and encoder instance.</summary>
-        /// <param name="stream">The stream to which compressed data is written.</param>
-        /// <param name="encoder">The encoder instance to use for compression. The stream will not dispose this encoder; instead, it will reset it when the stream is disposed.</param>
-        /// <param name="leaveOpen"><see langword="true" /> to leave the stream open after the <see cref="LzmaStream" /> object is disposed; otherwise, <see langword="false" />.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="encoder"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException"><paramref name="stream"/> does not support writing.</exception>
-        public LzmaStream(Stream stream, LzmaEncoder encoder, bool leaveOpen = false)
-        {
-            ArgumentNullException.ThrowIfNull(encoder);
-
-            Init(stream, CompressionMode.Compress);
-            _mode = CompressionMode.Compress;
-            _leaveOpen = leaveOpen;
-
-            _encoder = encoder;
-            _encoderOwned = false;
-        }
-
         private void WriteCore(ReadOnlySpan<byte> buffer, bool isFinalBlock = false, bool flush = false, bool throwOnActiveRwOp = true)
         {
             if (_mode != CompressionMode.Compress)

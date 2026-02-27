@@ -30,6 +30,9 @@ internal static partial class Interop
         internal static unsafe partial LzmaNative.LzmaRetCode lzma_easy_buffer_encode(uint preset, LzmaNative.LzmaCheck check, void* allocator, byte* inBuf, nuint inSize, byte* outBuf, nuint* outPos, nuint outSize);
 
         [LibraryImport(Libraries.CompressionNative)]
+        internal static unsafe partial LzmaNative.LzmaRetCode lzma_stream_buffer_encode(LzmaNative.LzmaFilter* filters, LzmaNative.LzmaCheck check, void* allocator, byte* inBuf, nuint inSize, byte* outBuf, nuint* outPos, nuint outSize);
+
+        [LibraryImport(Libraries.CompressionNative)]
         internal static unsafe partial ulong lzma_stream_buffer_bound(nuint uncompressedSize);
 
         [LibraryImport(Libraries.CompressionNative)]

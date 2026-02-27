@@ -90,7 +90,7 @@ namespace System.IO.Compression
         public override System.Threading.Tasks.ValueTask WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override void WriteByte(byte value) { }
     }
-    public enum LzmaChecksum
+    public enum LzmaChecksumType
     {
         None = 0,
         Crc32 = 1,
@@ -106,7 +106,7 @@ namespace System.IO.Compression
         public static int MaxWindowLog { get { throw null; } }
         public static int MinQuality { get { throw null; } }
         public static int MinWindowLog { get { throw null; } }
-        public System.IO.Compression.LzmaChecksum Checksum { get { throw null; } set { } }
+        public System.IO.Compression.LzmaChecksumType Checksum { get { throw null; } set { } }
         public int WindowLog { get { throw null; } set { } }
         public bool EnableExtremeMode { get { throw null; } set { } }
         public int Quality { get { throw null; } set { } }

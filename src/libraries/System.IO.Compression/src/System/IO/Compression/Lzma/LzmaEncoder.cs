@@ -29,7 +29,7 @@ namespace System.IO.Compression
 
             try
             {
-                SetQuality(_handle, LzmaUtils.QualityDefault, LzmaChecksum.Crc64);
+                SetQuality(_handle, LzmaUtils.QualityDefault, LzmaChecksumType.Crc64);
             }
             catch
             {
@@ -49,7 +49,7 @@ namespace System.IO.Compression
 
             try
             {
-                SetQuality(_handle, quality, LzmaChecksum.Crc64);
+                SetQuality(_handle, quality, LzmaChecksumType.Crc64);
             }
             catch
             {
@@ -70,7 +70,7 @@ namespace System.IO.Compression
 
             try
             {
-                SetQualityWithWindowLog(_handle, quality, windowLog, LzmaChecksum.Crc64);
+                SetQualityWithWindowLog(_handle, quality, windowLog, LzmaChecksumType.Crc64);
             }
             catch
             {
@@ -94,7 +94,7 @@ namespace System.IO.Compression
             try
             {
                 int quality = (int)compressionOptions.GetEffectiveQuality();
-                LzmaChecksum checksum = compressionOptions.Checksum;
+                LzmaChecksumType checksum = compressionOptions.Checksum;
                 int windowLog = compressionOptions.WindowLog;
 
                 if (windowLog != 0)
@@ -119,7 +119,7 @@ namespace System.IO.Compression
             _handle = new SafeLzmaHandle();
         }
 
-        internal static void SetQuality(SafeLzmaHandle handle, int quality, LzmaChecksum checksum = LzmaChecksum.Crc64)
+        internal static void SetQuality(SafeLzmaHandle handle, int quality, LzmaChecksumType checksum = LzmaChecksumType.Crc64)
         {
             Debug.Assert(handle is not null);
 
@@ -139,7 +139,7 @@ namespace System.IO.Compression
             }
         }
 
-        internal static void SetQualityWithWindowLog(SafeLzmaHandle handle, int quality, int windowLog, LzmaChecksum checksum = LzmaChecksum.Crc64)
+        internal static void SetQualityWithWindowLog(SafeLzmaHandle handle, int quality, int windowLog, LzmaChecksumType checksum = LzmaChecksumType.Crc64)
         {
             Debug.Assert(handle is not null);
 

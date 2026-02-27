@@ -308,18 +308,6 @@
   <data name="IO_SeekBeforeBegin" xml:space="preserve">
     <value>An attempt was made to move the position before the beginning of the stream.</value>
   </data>
-  <data name="CannotReadFromCompressionStream" xml:space="preserve">
-    <value>Cannot read from a stream that was opened for compression.</value>
-  </data>
-  <data name="CannotWriteToDecompressionStream" xml:space="preserve">
-    <value>Cannot write to a stream that was opened for decompression.</value>
-  </data>
-  <data name="Stream_FalseCanRead" xml:space="preserve">
-    <value>The base stream is not readable.</value>
-  </data>
-  <data name="Stream_FalseCanWrite" xml:space="preserve">
-    <value>The base stream is not writable.</value>
-  </data>
   <data name="LzmaEncoder_InputLengthTooLarge" xml:space="preserve">
     <value>The input length is too large to compute the maximum compressed size.</value>
   </data>

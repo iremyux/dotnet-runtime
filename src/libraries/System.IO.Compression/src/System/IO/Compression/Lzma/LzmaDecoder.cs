@@ -73,12 +73,12 @@ namespace System.IO.Compression
             bytesConsumed = 0;
             bytesWritten = 0;
 
+            EnsureNotDisposed();
+
             if (_finished)
             {
                 return OperationStatus.Done;
             }
-
-            EnsureNotDisposed();
 
             if (destination.IsEmpty)
             {
@@ -107,8 +107,14 @@ namespace System.IO.Compression
 
                     return ret switch
                     {
-                        LzmaNative.LzmaRetCode.Ok when strm.AvailOut == 0 => OperationStatus.DestinationTooSmall,
-                        LzmaNative.LzmaRetCode.Ok => OperationStatus.NeedMoreData,
+                        LzmaNative.LzmaRetCode.Ok
+                            or LzmaNative.LzmaRetCode.NoCheck
+                            or LzmaNative.LzmaRetCode.UnsupportedCheck
+                            or LzmaNative.LzmaRetCode.GetCheck when strm.AvailOut == 0 => OperationStatus.DestinationTooSmall,
+                        LzmaNative.LzmaRetCode.Ok
+                            or LzmaNative.LzmaRetCode.NoCheck
+                            or LzmaNative.LzmaRetCode.UnsupportedCheck
+                            or LzmaNative.LzmaRetCode.GetCheck => OperationStatus.NeedMoreData,
                         LzmaNative.LzmaRetCode.StreamEnd => FinishAndReturnDone(),
                         LzmaNative.LzmaRetCode.BufError => OperationStatus.DestinationTooSmall,
                         LzmaNative.LzmaRetCode.DataError or LzmaNative.LzmaRetCode.FormatError => OperationStatus.InvalidData,

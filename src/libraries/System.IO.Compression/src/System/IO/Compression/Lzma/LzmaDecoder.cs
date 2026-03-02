@@ -25,18 +25,31 @@ namespace System.IO.Compression
             InitializeDecoder();
         }
 
+        /// <summary>Initializes a new instance of the <see cref="LzmaDecoder"/> class with a maximum window size.</summary>
+        /// <param name="maxWindowLog">The maximum window size for decompression, expressed as base 2 logarithm. This limits memory usage during decompression.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxWindowLog"/> is not between <see cref="LzmaCompressionOptions.MinWindowLog"/> and <see cref="LzmaCompressionOptions.MaxWindowLog"/>.</exception>
+        /// <exception cref="IOException">Failed to create the <see cref="LzmaDecoder"/> instance.</exception>
+        public LzmaDecoder(int maxWindowLog)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxWindowLog, LzmaUtils.WindowLogMin, nameof(maxWindowLog));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(maxWindowLog, LzmaUtils.WindowLogMax, nameof(maxWindowLog));
+
+            _disposed = false;
+            _finished = false;
+            InitializeDecoder(1UL << maxWindowLog);
+        }
+
         [MemberNotNull(nameof(_handle))]
-        private void InitializeDecoder()
+        private void InitializeDecoder(ulong memoryLimit = ulong.MaxValue)
         {
             _handle = new SafeLzmaHandle();
 
             unsafe
             {
                 // Use auto_decoder to support both XZ and legacy LZMA formats
-                // Use UINT64_MAX for memlimit to allow any stream
                 LzmaNative.LzmaRetCode ret = Interop.Lzma.lzma_auto_decoder(
                     _handle.GetStreamPointer(),
-                    ulong.MaxValue,
+                    memoryLimit,
                     0);
 
                 if (ret != LzmaNative.LzmaRetCode.Ok)

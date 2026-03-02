@@ -11,9 +11,6 @@ namespace System.IO.Compression
     /// </summary>
     internal static class LzmaNative
     {
-        /// <summary>Maximum window size (1.5 GiB).</summary>
-        internal const int LzmaMaxWindowSize = (1 << 30) + (1 << 29);
-
         /// <summary>Return codes from liblzma functions.</summary>
         internal enum LzmaRetCode : uint
         {

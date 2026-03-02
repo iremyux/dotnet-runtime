@@ -29,7 +29,7 @@ namespace System.IO.Compression
 
             try
             {
-                SetQuality(_handle, LzmaUtils.QualityDefault, LzmaChecksumType.Crc64);
+                SetQuality(_handle, (uint)LzmaUtils.QualityDefault, LzmaChecksumType.Crc64);
             }
             catch
             {
@@ -49,7 +49,8 @@ namespace System.IO.Compression
 
             try
             {
-                SetQuality(_handle, quality, LzmaChecksumType.Crc64);
+                ValidateQuality(quality);
+                SetQuality(_handle, (uint)quality, LzmaChecksumType.Crc64);
             }
             catch
             {
@@ -70,7 +71,9 @@ namespace System.IO.Compression
 
             try
             {
-                SetQualityWithWindowLog(_handle, quality, windowLog, LzmaChecksumType.Crc64);
+                ValidateQuality(quality);
+                ValidateWindowLog(windowLog);
+                SetQualityWithWindowLog(_handle, (uint)quality, windowLog, LzmaChecksumType.Crc64);
             }
             catch
             {
@@ -93,17 +96,18 @@ namespace System.IO.Compression
 
             try
             {
-                int quality = (int)compressionOptions.GetEffectiveQuality();
+                uint preset = compressionOptions.GetEffectiveQuality();
                 LzmaChecksumType checksum = compressionOptions.Checksum;
                 int windowLog = compressionOptions.WindowLog;
 
                 if (windowLog != 0)
                 {
-                    SetQualityWithWindowLog(_handle, quality, windowLog, checksum);
+                    ValidateWindowLog(windowLog);
+                    SetQualityWithWindowLog(_handle, preset, windowLog, checksum);
                 }
                 else
                 {
-                    SetQuality(_handle, quality, checksum);
+                    SetQuality(_handle, preset, checksum);
                 }
             }
             catch
@@ -119,17 +123,15 @@ namespace System.IO.Compression
             _handle = new SafeLzmaHandle();
         }
 
-        internal static void SetQuality(SafeLzmaHandle handle, int quality, LzmaChecksumType checksum = LzmaChecksumType.Crc64)
+        internal static void SetQuality(SafeLzmaHandle handle, uint preset, LzmaChecksumType checksum = LzmaChecksumType.Crc64)
         {
             Debug.Assert(handle is not null);
-
-            ValidateQuality(quality);
 
             unsafe
             {
                 LzmaNative.LzmaRetCode ret = Interop.Lzma.lzma_easy_encoder(
                     handle.GetStreamPointer(),
-                    (uint)quality,
+                    preset,
                     (LzmaNative.LzmaCheck)checksum);
 
                 if (ret != LzmaNative.LzmaRetCode.Ok)
@@ -139,19 +141,16 @@ namespace System.IO.Compression
             }
         }
 
-        internal static void SetQualityWithWindowLog(SafeLzmaHandle handle, int quality, int windowLog, LzmaChecksumType checksum = LzmaChecksumType.Crc64)
+        internal static void SetQualityWithWindowLog(SafeLzmaHandle handle, uint preset, int windowLog, LzmaChecksumType checksum = LzmaChecksumType.Crc64)
         {
             Debug.Assert(handle is not null);
-
-            ValidateQuality(quality);
-            ValidateWindowLog(windowLog);
 
             unsafe
             {
                 LzmaNative.LzmaOptionsLzma options;
-                if (Interop.Lzma.lzma_lzma_preset(&options, (uint)quality) != 0)
+                if (Interop.Lzma.lzma_lzma_preset(&options, preset) != 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(quality));
+                    throw new ArgumentOutOfRangeException(nameof(preset));
                 }
 
                 options.DictSize = (uint)LzmaUtils.WindowSizeFromLog(windowLog);

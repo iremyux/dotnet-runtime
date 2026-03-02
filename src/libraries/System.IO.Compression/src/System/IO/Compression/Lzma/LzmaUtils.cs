@@ -24,9 +24,6 @@ namespace System.IO.Compression
         /// <summary>Converts a WindowLog value (base 2 logarithm) to the actual window size in bytes.</summary>
         internal static int WindowSizeFromLog(int windowLog) => 1 << windowLog;
 
-        // Buffer sizes for LZMA operations
-        internal const int DefaultInternalBufferSize = (1 << 16) - 16; // 65520 bytes, similar to Brotli/Zstandard
-
         /// <summary>Checks if an LZMA operation result indicates an error.</summary>
         internal static bool IsError(LzmaNative.LzmaRetCode result) =>
             result != LzmaNative.LzmaRetCode.Ok && result != LzmaNative.LzmaRetCode.StreamEnd;

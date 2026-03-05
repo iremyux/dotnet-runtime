@@ -122,15 +122,15 @@ namespace System.IO.Compression
     public enum LzmaChecksumType
     {
         /// <summary>No integrity checksum is calculated.</summary>
-        None = (int)LzmaNative.LzmaCheck.None,
+        None = 0,
 
         /// <summary>CRC32 using the polynomial from the IEEE 802.3 standard (4 bytes).</summary>
-        Crc32 = (int)LzmaNative.LzmaCheck.Crc32,
+        Crc32 = 1,
 
         /// <summary>CRC64 using the polynomial from the ECMA-182 standard (8 bytes).</summary>
-        Crc64 = (int)LzmaNative.LzmaCheck.Crc64,
+        Crc64 = 2,
 
         /// <summary>SHA-256 hash (32 bytes).</summary>
-        Sha256 = (int)LzmaNative.LzmaCheck.Sha256
+        Sha256 = 3,
     }
 }

@@ -54,7 +54,7 @@ namespace System.IO.Compression
         /// <param name="leaveOpen"><see langword="true" /> to leave the stream open after the <see cref="LzmaStream" /> object is disposed; otherwise, <see langword="false" />.</param>
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="stream"/> does not support writing and <paramref name="mode"/> is <see cref="CompressionMode.Compress"/> or <paramref name="stream"/> does not support reading and <paramref name="mode"/> is <see cref="CompressionMode.Decompress"/>.</exception>
-        public LzmaStream(Stream stream, CompressionMode mode, bool leaveOpen)
+        public LzmaStream(Stream stream, CompressionMode mode, bool leaveOpen = false)
         {
             Init(stream, mode);
             _leaveOpen = leaveOpen;
@@ -69,13 +69,6 @@ namespace System.IO.Compression
                 _decoder = new LzmaDecoder();
             }
         }
-
-        /// <summary>Initializes a new instance of the <see cref="LzmaStream" /> class by using the specified stream and compression mode.</summary>
-        /// <param name="stream">The stream to which compressed data is written or from which data to decompress is read.</param>
-        /// <param name="mode">One of the enumeration values that indicates whether to compress data to the stream or decompress data from the stream.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException"><paramref name="stream"/> does not support writing and <paramref name="mode"/> is <see cref="CompressionMode.Compress"/> or <paramref name="stream"/> does not support reading and <paramref name="mode"/> is <see cref="CompressionMode.Decompress"/>.</exception>
-        public LzmaStream(Stream stream, CompressionMode mode) : this(stream, mode, leaveOpen: false) { }
 
         /// <summary>Gets a reference to the underlying stream.</summary>
         /// <value>A stream object that represents the underlying stream.</value>

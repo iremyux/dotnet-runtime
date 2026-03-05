@@ -132,7 +132,7 @@ namespace System.IO.Compression
                 LzmaNative.LzmaRetCode ret = Interop.Lzma.lzma_easy_encoder(
                     handle.GetStreamPointer(),
                     preset,
-                    (LzmaNative.LzmaCheck)checksum);
+                    ToNativeCheck(checksum));
 
                 if (ret != LzmaNative.LzmaRetCode.Ok)
                 {
@@ -164,7 +164,7 @@ namespace System.IO.Compression
                 LzmaNative.LzmaRetCode ret = Interop.Lzma.lzma_stream_encoder(
                     handle.GetStreamPointer(),
                     filters,
-                    (LzmaNative.LzmaCheck)checksum);
+                    ToNativeCheck(checksum));
 
                 if (ret != LzmaNative.LzmaRetCode.Ok)
                 {
@@ -408,5 +408,15 @@ namespace System.IO.Compression
             ArgumentOutOfRangeException.ThrowIfLessThan(windowLog, LzmaUtils.WindowLogMin, nameof(windowLog));
             ArgumentOutOfRangeException.ThrowIfGreaterThan(windowLog, LzmaUtils.WindowLogMax, nameof(windowLog));
         }
+
+        private static LzmaNative.LzmaCheck ToNativeCheck(LzmaChecksumType checksum) =>
+            checksum switch
+            {
+                LzmaChecksumType.None => LzmaNative.LzmaCheck.None,
+                LzmaChecksumType.Crc32 => LzmaNative.LzmaCheck.Crc32,
+                LzmaChecksumType.Crc64 => LzmaNative.LzmaCheck.Crc64,
+                LzmaChecksumType.Sha256 => LzmaNative.LzmaCheck.Sha256,
+                _ => throw new ArgumentOutOfRangeException(nameof(checksum))
+            };
     }
 }

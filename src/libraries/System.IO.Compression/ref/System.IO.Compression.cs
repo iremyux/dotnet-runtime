@@ -94,8 +94,8 @@ namespace System.IO.Compression
     {
         None = 0,
         Crc32 = 1,
-        Crc64 = 4,
-        Sha256 = 10,
+        Crc64 = 2,
+        Sha256 = 3,
     }
     public sealed partial class LzmaCompressionOptions
     {
@@ -135,10 +135,8 @@ namespace System.IO.Compression
     }
     public sealed partial class LzmaStream : System.IO.Stream
     {
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionLevel compressionLevel) { }
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionLevel compressionLevel, bool leaveOpen) { }
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode) { }
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode, bool leaveOpen) { }
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionLevel compressionLevel, bool leaveOpen = false) { }
+        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode, bool leaveOpen = false) { }
         public LzmaStream(System.IO.Stream stream, System.IO.Compression.LzmaCompressionOptions compressionOptions, bool leaveOpen = false) { }
         public System.IO.Stream BaseStream { get { throw null; } }
         public override bool CanRead { get { throw null; } }

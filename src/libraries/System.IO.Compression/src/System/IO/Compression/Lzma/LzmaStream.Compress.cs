@@ -12,13 +12,6 @@ namespace System.IO.Compression
     {
         private LzmaEncoder? _encoder;
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaStream" /> class by using the specified stream and compression level.</summary>
-        /// <param name="stream">The stream to which compressed data is written.</param>
-        /// <param name="compressionLevel">One of the enumeration values that indicates whether to emphasize speed or compression efficiency when compressing data to the stream.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException"><paramref name="stream"/> does not support writing.</exception>
-        public LzmaStream(Stream stream, CompressionLevel compressionLevel) : this(stream, compressionLevel, leaveOpen: false) { }
-
         /// <summary>Initializes a new instance of the <see cref="LzmaStream" /> class by using the specified stream and compression level, and optionally leaves the stream open.</summary>
         /// <param name="stream">The stream to which compressed data is written.</param>
         /// <param name="compressionLevel">One of the enumeration values that indicates whether to emphasize speed or compression efficiency when compressing data to the stream.</param>
@@ -26,7 +19,7 @@ namespace System.IO.Compression
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="stream"/> does not support writing.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="compressionLevel"/> is not a valid <see cref="CompressionLevel"/> value.</exception>
-        public LzmaStream(Stream stream, CompressionLevel compressionLevel, bool leaveOpen)
+        public LzmaStream(Stream stream, CompressionLevel compressionLevel, bool leaveOpen = false)
         {
             Init(stream, CompressionMode.Compress);
             _mode = CompressionMode.Compress;

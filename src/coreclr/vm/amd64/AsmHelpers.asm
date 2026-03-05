@@ -17,6 +17,7 @@ extern IL_Rethrow_Impl:proc
 ifdef FEATURE_INTERPRETER
 extern ExecuteInterpretedMethod:proc
 extern GetInterpThreadContextWithPossiblyMissingThreadOrCallStub:proc
+extern CallInterpreterFuncletWorker:proc
 endif
 
 extern g_pPollGC:QWORD
@@ -402,15 +403,12 @@ NESTED_END OnCallCountThresholdReachedStub, _TEXT
 extern JIT_PatchpointWorkerWorkerWithPolicy:proc
 
 NESTED_ENTRY JIT_Patchpoint, _TEXT
-        ; Use PUSH_COOP_PINVOKE_FRAME_WITH_FLOATS to save all registers including FP callee-saved
-        ; This allows us to build a complete CONTEXT from TransitionBlock without RtlCaptureContext
-        PUSH_COOP_PINVOKE_FRAME_WITH_FLOATS rcx
+        PROLOG_WITH_TRANSITION_BLOCK
 
-        ; RCX contains pointer to TransitionBlock
+        lea     rcx, [rsp + __PWTB_TransitionBlock] ; TransitionBlock *
         call    JIT_PatchpointWorkerWorkerWithPolicy
 
-        ; If we return, restore all registers and return to caller
-        POP_COOP_PINVOKE_FRAME_WITH_FLOATS_RETURN
+        EPILOG_WITH_TRANSITION_BLOCK_RETURN
 NESTED_END JIT_Patchpoint, _TEXT
 
 ; first arg register holds iloffset, which needs to be moved to the second register, and the first register filled with NULL
@@ -562,7 +560,7 @@ ifdef FEATURE_INTERPRETER
 
 NESTED_ENTRY InterpreterStub, _TEXT
 
-        PROLOG_WITH_TRANSITION_BLOCK
+        PROLOG_WITH_TRANSITION_BLOCK 0, <PushCalleeSavedFloatRegs>
 
         __InterpreterStubArgumentRegistersOffset = __PWTB_ArgumentRegisters
         ; IR bytecode address
@@ -1288,6 +1286,56 @@ END_PROLOGUE
         pop rbp
         ret
 NESTED_END CallJittedMethodRetU2, _TEXT
+
+;==========================================================================
+; Create a real TransitionBlock and call CallInterpreterFuncletWorker
+; to execute an interpreter funclet (catch/finally/filter handler).
+;
+; extern "C" DWORD_PTR CallInterpreterFunclet(
+;     OBJECTREF throwable,        // rcx
+;     void* pHandler,             // rdx
+;     REGDISPLAY *pRD,            // r8
+;     ExInfo *pExInfo,            // r9
+;     bool isFilter               // [rsp+28h]
+; );
+;==========================================================================
+extern CallInterpreterFuncletWorker:proc
+
+NESTED_ENTRY CallInterpreterFunclet, _TEXT
+
+        PROLOG_WITH_TRANSITION_BLOCK 16, <PushCalleeSavedFloatRegs>
+
+        ; Pass TransitionBlock* as last (6th) argument on stack
+        ; Worker signature: CallInterpreterFuncletWorker(throwable, pHandler, pRD, pExInfo, isFilter, TransitionBlock*)
+        ; Original args: rcx=throwable, rdx=pHandler, r8=pRD, r9=pExInfo, [rsp+__PWTB_ArgumentRegisters+20h]=isFilter
+
+        ; Move isFilter to 5th param slot
+        mov     rax, [rsp + __PWTB_ArgumentRegisters + 20h] ; isFilter (5th param from original caller)
+        mov     [rsp + 20h], rax                            ; pass isFilter as 5th param on stack
+
+        ; Put TransitionBlock* as 6th param on stack
+        lea     rax, [rsp + __PWTB_TransitionBlock]
+        mov     [rsp + 28h], rax                            ; TransitionBlock* as 6th param
+
+        ; rcx, rdx, r8, r9 remain unchanged (throwable, pHandler, pRD, pExInfo)
+
+        call    CallInterpreterFuncletWorker
+
+        EPILOG_WITH_TRANSITION_BLOCK_RETURN
+
+NESTED_END CallInterpreterFunclet, _TEXT
+
+extern AsyncHelpers_ResumeInterpreterContinuationWorker:proc
+
+NESTED_ENTRY AsyncHelpers_ResumeInterpreterContinuation, _TEXT
+        PROLOG_WITH_TRANSITION_BLOCK 0, <PushCalleeSavedFloatRegs>
+
+        lea r8, [rsp + __PWTB_TransitionBlock]
+        call AsyncHelpers_ResumeInterpreterContinuationWorker
+
+        EPILOG_WITH_TRANSITION_BLOCK_RETURN
+
+NESTED_END AsyncHelpers_ResumeInterpreterContinuation, _TEXT
 
 endif ; FEATURE_INTERPRETER
 

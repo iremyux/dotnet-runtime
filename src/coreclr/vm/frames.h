@@ -596,7 +596,12 @@ protected:
 
 #ifndef DACCESS_COMPILE
 #if (!defined(TARGET_X86) || defined(TARGET_UNIX)) && !defined(TARGET_WASM)
-    static void UpdateFloatingPointRegisters(const PREGDISPLAY pRD, TADDR targetSP);
+    // Pseudo-virtual method for updating floating point registers during stack walk
+    void UpdateFloatingPointRegisters_Impl(const PREGDISPLAY pRD, TADDR targetSP);
+public:
+    // Public dispatch method for UpdateFloatingPointRegisters
+    void UpdateFloatingPointRegisters(const PREGDISPLAY pRD, TADDR targetSP);
+protected:
 #endif // (!TARGET_X86 || TARGET_UNIX) && !TARGET_WASM
 #endif // DACCESS_COMPILE
 
@@ -1033,11 +1038,6 @@ public:
     }
 
     void UpdateContextFromTransitionBlock(TransitionBlock *pTransitionBlock);
-
-    // Static helper to populate a CONTEXT from a TransitionBlock for OSR transitions.
-    // Returns the adjusted SP and FP values that the OSR method should use.
-    static void UpdateContextForOSRTransition(TransitionBlock* pTransitionBlock, CONTEXT* pContext, 
-                                              UINT_PTR* pCurrentSP, UINT_PTR* pCurrentFP);
 #endif
 
     TADDR GetReturnAddressPtr_Impl()
@@ -2238,7 +2238,7 @@ public:
 
 #ifndef DACCESS_COMPILE
 #if (!defined(TARGET_X86) || defined(TARGET_UNIX)) && !defined(TARGET_WASM)
-    void UpdateFloatingPointRegisters(const PREGDISPLAY pRD);
+    void UpdateFloatingPointRegisters_Impl(const PREGDISPLAY pRD, TADDR targetSP);
 #endif // (!TARGET_X86 || TARGET_UNIX) && !TARGET_WASM
 #endif // DACCESS_COMPILE
 
@@ -2515,6 +2515,12 @@ public:
 #ifndef DACCESS_COMPILE
     void ExceptionUnwind_Impl();
 #endif
+
+#ifndef DACCESS_COMPILE
+#if (!defined(TARGET_X86) || defined(TARGET_UNIX)) && !defined(TARGET_WASM)
+    void UpdateFloatingPointRegisters_Impl(const PREGDISPLAY pRD, TADDR targetSP);
+#endif // (!TARGET_X86 || TARGET_UNIX) && !TARGET_WASM
+#endif // DACCESS_COMPILE
 
     PTR_InterpMethodContextFrame GetTopInterpMethodContextFrame();
 

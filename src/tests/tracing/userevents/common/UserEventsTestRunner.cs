@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -18,7 +19,17 @@ namespace Tracing.UserEvents.Tests.Common
         private const int SIGINT = 2;
         private const int DefaultTraceeExitTimeoutMs = 5000;
         private const int DefaultRecordTraceExitTimeoutMs = 20000;
-        private const int DefaultTraceeDelayToSetupTracepointsMs = 200;
+
+        // Delay before starting the tracee to let record-trace finish setup. The
+        // tracee's ManualResetEventSlim gates on tracepoint registration via IPC, but
+        // that alone is not sufficient as record-trace's ring buffers must also be active
+        // (PerfSession::enable) to capture events. Without this delay, the tracee may be
+        // discovered during record-trace's /proc scan and receive IPC before enable,
+        // causing events to be lost. With the delay, the tracee is instead discovered
+        // via MMAP2 records after PerfSession is enabled.
+        // record-trace startup -> PerfSession::enable scales with system process count:
+        // averaged 113ms at 126 processes and 253ms at 534 processes on a 2-core system.
+        private const int RecordTraceSetupDelayMs = 300;
 
         [DllImport("libc", EntryPoint = "kill", SetLastError = true)]
         private static extern int Kill(int pid, int sig);
@@ -26,19 +37,30 @@ namespace Tracing.UserEvents.Tests.Common
         public static int Run(
             string[] args,
             string scenarioName,
-            string traceeAssemblyPath,
             Action traceeAction,
-            Func<EventPipeEventSource, bool> traceValidator,
+            Func<int, EventPipeEventSource, bool> traceValidator,
+            EventSource traceeEventSource,
             int traceeExitTimeout = DefaultTraceeExitTimeoutMs,
-            int recordTraceExitTimeout = DefaultRecordTraceExitTimeoutMs,
-            int traceeDelayToSetupTracepoints = DefaultTraceeDelayToSetupTracepointsMs)
+            int recordTraceExitTimeout = DefaultRecordTraceExitTimeoutMs)
         {
             if (args.Length > 0 && args[0].Equals("tracee", StringComparison.OrdinalIgnoreCase))
             {
-                if (traceeDelayToSetupTracepoints > 0)
+                using var enabledEvent = new ManualResetEventSlim(false);
+
+                traceeEventSource.EventCommandExecuted += (sender, e) =>
                 {
-                    Thread.Sleep(traceeDelayToSetupTracepoints);
+                    if (e.Command == EventCommand.Enable)
+                    {
+                        enabledEvent.Set();
+                    }
+                };
+
+                if (traceeEventSource.IsEnabled())
+                {
+                    enabledEvent.Set();
                 }
+
+                enabledEvent.Wait();
 
                 traceeAction();
                 return 0;
@@ -46,7 +68,6 @@ namespace Tracing.UserEvents.Tests.Common
 
             return RunOrchestrator(
                 scenarioName,
-                traceeAssemblyPath,
                 traceValidator,
                 traceeExitTimeout,
                 recordTraceExitTimeout);
@@ -54,12 +75,28 @@ namespace Tracing.UserEvents.Tests.Common
 
         private static int RunOrchestrator(
             string scenarioName,
-            string traceeAssemblyPath,
-            Func<EventPipeEventSource, bool> traceValidator,
+            Func<int, EventPipeEventSource, bool> traceValidator,
             int traceeExitTimeout,
             int recordTraceExitTimeout)
         {
-            string userEventsScenarioDir = Path.GetDirectoryName(traceeAssemblyPath);
+            // Start with AppContext.BaseDirectory and determine if we're running NativeAOT
+            string baseDir = AppContext.BaseDirectory;
+            bool isNativeAot = false;
+            string userEventsScenarioDir = baseDir;
+
+            if (Path.GetFileName(baseDir.TrimEnd(Path.DirectorySeparatorChar)) == "native")
+            {
+                // NativeAOT places its compiled test executables under a 'native' subdirectory.
+                isNativeAot = true;
+                userEventsScenarioDir = Path.GetFullPath(Path.Combine(baseDir, ".."));
+            }
+
+            if (Path.GetFileName(userEventsScenarioDir.TrimEnd(Path.DirectorySeparatorChar)) != scenarioName)
+            {
+                Console.Error.WriteLine($"Could not resolve the userevents test scenario directory. Expected directory to end with '{scenarioName}', but got: {userEventsScenarioDir}");
+                return -1;
+            }
+
             string recordTracePath = ResolveRecordTracePath(userEventsScenarioDir);
             string scriptFilePath = Path.Combine(userEventsScenarioDir, $"{scenarioName}.script");
 
@@ -88,19 +125,24 @@ namespace Tracing.UserEvents.Tests.Common
 
             ProcessStartInfo recordTraceStartInfo = new();
             recordTraceStartInfo.FileName = "sudo";
-            recordTraceStartInfo.Arguments = $"-n {recordTracePath} --script-file {scriptFilePath} --out {traceFilePath}";
+            recordTraceStartInfo.ArgumentList.Add("-n");
+            recordTraceStartInfo.ArgumentList.Add(recordTracePath);
+            recordTraceStartInfo.ArgumentList.Add("--script-file");
+            recordTraceStartInfo.ArgumentList.Add(scriptFilePath);
+            recordTraceStartInfo.ArgumentList.Add("--out");
+            recordTraceStartInfo.ArgumentList.Add(traceFilePath);
             recordTraceStartInfo.WorkingDirectory = userEventsScenarioDir;
             recordTraceStartInfo.UseShellExecute = false;
             recordTraceStartInfo.RedirectStandardOutput = true;
             recordTraceStartInfo.RedirectStandardError = true;
 
-            Console.WriteLine($"Starting record-trace: {recordTraceStartInfo.FileName} {recordTraceStartInfo.Arguments}");
+            Console.WriteLine($"Starting record-trace: {recordTraceStartInfo.FileName} {string.Join(" ", recordTraceStartInfo.ArgumentList)}");
             using Process recordTraceProcess = Process.Start(recordTraceStartInfo);
             recordTraceProcess.OutputDataReceived += (_, args) =>
             {
                 if (!string.IsNullOrEmpty(args.Data))
                 {
-                    Console.WriteLine($"[record-trace] {args.Data}");
+                    Console.WriteLine($"[record-trace][stdout] {args.Data}");
                 }
             };
             recordTraceProcess.BeginOutputReadLine();
@@ -108,15 +150,30 @@ namespace Tracing.UserEvents.Tests.Common
             {
                 if (!string.IsNullOrEmpty(args.Data))
                 {
-                    Console.Error.WriteLine($"[record-trace] {args.Data}");
+                    Console.WriteLine($"[record-trace][stderr] {args.Data}");
                 }
             };
             recordTraceProcess.BeginErrorReadLine();
             Console.WriteLine($"record-trace started with PID: {recordTraceProcess.Id}");
 
             ProcessStartInfo traceeStartInfo = new();
-            traceeStartInfo.FileName = Process.GetCurrentProcess().MainModule!.FileName;
-            traceeStartInfo.Arguments = $"{traceeAssemblyPath} tracee";
+            traceeStartInfo.FileName = Environment.ProcessPath
+                ?? throw new InvalidOperationException("Environment.ProcessPath is null");
+
+            // NativeAOT tests run the native executable directly.
+            // CoreCLR tests run through corerun which loads the managed assembly.
+            if (isNativeAot)
+            {
+                traceeStartInfo.ArgumentList.Add("tracee");
+            }
+            else
+            {
+                // For CoreCLR, construct the path to the assembly
+                string assemblyPath = Path.Combine(userEventsScenarioDir, $"{scenarioName}.dll");
+                traceeStartInfo.ArgumentList.Add(assemblyPath);
+                traceeStartInfo.ArgumentList.Add("tracee");
+            }
+
             traceeStartInfo.WorkingDirectory = userEventsScenarioDir;
             traceeStartInfo.RedirectStandardOutput = true;
             traceeStartInfo.RedirectStandardError = true;
@@ -131,7 +188,11 @@ namespace Tracing.UserEvents.Tests.Common
             // When https://github.com/microsoft/one-collect/issues/183 is fixed, this and the above TMPDIR should be removed.
             EnsureCleanDiagnosticPorts(diagnosticPortDir);
 
-            Console.WriteLine($"Starting tracee process: {traceeStartInfo.FileName} {traceeStartInfo.Arguments}");
+            // Allow record-trace to finish setup before starting the tracee.
+            Console.WriteLine($"Delaying tracee startup {RecordTraceSetupDelayMs}ms for record-trace setup...");
+            Thread.Sleep(RecordTraceSetupDelayMs);
+
+            Console.WriteLine($"Starting tracee process: {traceeStartInfo.FileName} {string.Join(" ", traceeStartInfo.ArgumentList)}");
             using Process traceeProcess = Process.Start(traceeStartInfo);
             int traceePid = traceeProcess.Id;
             Console.WriteLine($"Tracee process started with PID: {traceePid}");
@@ -139,7 +200,7 @@ namespace Tracing.UserEvents.Tests.Common
             {
                 if (!string.IsNullOrEmpty(args.Data))
                 {
-                    Console.WriteLine($"[tracee] {args.Data}");
+                    Console.WriteLine($"[tracee][stdout] {args.Data}");
                 }
             };
             traceeProcess.BeginOutputReadLine();
@@ -147,7 +208,7 @@ namespace Tracing.UserEvents.Tests.Common
             {
                 if (!string.IsNullOrEmpty(args.Data))
                 {
-                    Console.Error.WriteLine($"[tracee] {args.Data}");
+                    Console.WriteLine($"[tracee][stderr] {args.Data}");
                 }
             };
             traceeProcess.BeginErrorReadLine();
@@ -186,7 +247,7 @@ namespace Tracing.UserEvents.Tests.Common
             }
 
             using EventPipeEventSource source = new EventPipeEventSource(traceFilePath);
-            if (!traceValidator(source))
+            if (!traceValidator(traceePid, source))
             {
                 Console.Error.WriteLine($"Trace file `{traceFilePath}` does not contain expected events.");
                 UploadTraceFileFromHelix(traceFilePath, scenarioName);
@@ -198,9 +259,9 @@ namespace Tracing.UserEvents.Tests.Common
 
         private static string ResolveRecordTracePath(string userEventsScenarioDir)
         {
-            // scenario dir: .../tracing/userevents/<scenario>/<scenario>
+            // userEventsScenarioDir is .../tracing/userevents/<scenario>/<scenario>/ for both CoreCLR and NativeAOT
+            // Navigate up two directories to reach userevents root, then into common/userevents_common
             string usereventsRoot = Path.GetFullPath(Path.Combine(userEventsScenarioDir, "..", ".."));
-            // common dir: .../tracing/userevents/common/userevents_common
             string commonDir = Path.Combine(usereventsRoot, "common", "userevents_common");
             string recordTracePath = Path.Combine(commonDir, "record-trace");
             return recordTracePath;
@@ -242,8 +303,19 @@ namespace Tracing.UserEvents.Tests.Common
                 {
                     foreach (FileInfo fi in ipc)
                     {
-                        Console.WriteLine($"Deleting zombie diagnostic port: {fi.FullName}");
-                        fi.Delete();
+                        try
+                        {
+                            Console.WriteLine($"Deleting zombie diagnostic port: {fi.FullName}");
+                            fi.Delete();
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            Console.WriteLine($"Skipping zombie diagnostic port (permission denied): {fi.FullName}");
+                        }
+                        catch (IOException)
+                        {
+                            Console.WriteLine($"Skipping zombie diagnostic port (I/O error): {fi.FullName}");
+                        }
                     }
                 }
                 else
@@ -254,8 +326,19 @@ namespace Tracing.UserEvents.Tests.Common
                         var duplicates = ipc.OrderBy(fileInfo => fileInfo.CreationTime.Ticks).SkipLast(1);
                         foreach (FileInfo fi in duplicates)
                         {
-                            Console.WriteLine($"Deleting duplicate diagnostic port: {fi.FullName}");
-                            fi.Delete();
+                            try
+                            {
+                                Console.WriteLine($"Deleting duplicate diagnostic port: {fi.FullName}");
+                                fi.Delete();
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                Console.WriteLine($"Skipping duplicate diagnostic port (permission denied): {fi.FullName}");
+                            }
+                            catch (IOException)
+                            {
+                                Console.WriteLine($"Skipping duplicate diagnostic port (I/O error): {fi.FullName}");
+                            }
                         }
                     }
                 }

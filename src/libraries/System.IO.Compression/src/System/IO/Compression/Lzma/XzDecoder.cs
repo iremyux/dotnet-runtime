@@ -9,27 +9,27 @@ using Microsoft.Win32.SafeHandles;
 
 namespace System.IO.Compression
 {
-    /// <summary>Provides methods and properties to decompress data using LZMA/XZ decompression.</summary>
-    public sealed class LzmaDecoder : IDisposable
+    /// <summary>Provides methods and properties to decompress data using XZ decompression.</summary>
+    public sealed class XzDecoder : IDisposable
     {
         internal SafeLzmaHandle _handle;
         private bool _disposed;
         private bool _finished;
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaDecoder"/> class with default settings.</summary>
-        /// <exception cref="IOException">Failed to create the <see cref="LzmaDecoder"/> instance.</exception>
-        public LzmaDecoder()
+        /// <summary>Initializes a new instance of the <see cref="XzDecoder"/> class with default settings.</summary>
+        /// <exception cref="IOException">Failed to create the <see cref="XzDecoder"/> instance.</exception>
+        public XzDecoder()
         {
             _disposed = false;
             _finished = false;
             InitializeDecoder();
         }
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaDecoder"/> class with a maximum window size.</summary>
+        /// <summary>Initializes a new instance of the <see cref="XzDecoder"/> class with a maximum window size.</summary>
         /// <param name="maxWindowLog">The maximum window size for decompression, expressed as base 2 logarithm. This limits memory usage during decompression.</param>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxWindowLog"/> is not between <see cref="LzmaCompressionOptions.MinWindowLog"/> and <see cref="LzmaCompressionOptions.MaxWindowLog"/>.</exception>
-        /// <exception cref="IOException">Failed to create the <see cref="LzmaDecoder"/> instance.</exception>
-        public LzmaDecoder(int maxWindowLog)
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxWindowLog"/> is not between <see cref="XzCompressionOptions.MinWindowLog"/> and <see cref="XzCompressionOptions.MaxWindowLog"/>.</exception>
+        /// <exception cref="IOException">Failed to create the <see cref="XzDecoder"/> instance.</exception>
+        public XzDecoder(int maxWindowLog)
         {
             ArgumentOutOfRangeException.ThrowIfLessThan(maxWindowLog, LzmaUtils.WindowLogMin, nameof(maxWindowLog));
             ArgumentOutOfRangeException.ThrowIfGreaterThan(maxWindowLog, LzmaUtils.WindowLogMax, nameof(maxWindowLog));
@@ -177,7 +177,7 @@ namespace System.IO.Compression
             }
         }
 
-        /// <summary>Releases all resources used by the <see cref="LzmaDecoder"/>.</summary>
+        /// <summary>Releases all resources used by the <see cref="XzDecoder"/>.</summary>
         public void Dispose()
         {
             _disposed = true;
@@ -186,7 +186,7 @@ namespace System.IO.Compression
 
         private void EnsureNotDisposed()
         {
-            ObjectDisposedException.ThrowIf(_disposed, nameof(LzmaDecoder));
+            ObjectDisposedException.ThrowIf(_disposed, nameof(XzDecoder));
         }
     }
 }

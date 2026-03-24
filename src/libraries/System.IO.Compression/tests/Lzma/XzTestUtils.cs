@@ -3,7 +3,7 @@
 
 namespace System.IO.Compression
 {
-    public static class LzmaTestUtils
+    public static class XzTestUtils
     {
         public static byte[] CreateTestData(int size = 1000)
         {

@@ -7,18 +7,18 @@ using Xunit;
 
 namespace System.IO.Compression
 {
-    public class LzmaStreamUnitTests : CompressionStreamUnitTestBase
+    public class XzStreamUnitTests : CompressionStreamUnitTestBase
     {
         private static readonly ConcurrentDictionary<string, string> s_compressedFiles = new();
 
-        public override Stream CreateStream(Stream stream, CompressionMode mode) => new LzmaStream(stream, mode);
-        public override Stream CreateStream(Stream stream, CompressionMode mode, bool leaveOpen) => new LzmaStream(stream, mode, leaveOpen);
-        public override Stream CreateStream(Stream stream, CompressionLevel level) => new LzmaStream(stream, level);
-        public override Stream CreateStream(Stream stream, CompressionLevel level, bool leaveOpen) => new LzmaStream(stream, level, leaveOpen);
+        public override Stream CreateStream(Stream stream, CompressionMode mode) => new XzStream(stream, mode);
+        public override Stream CreateStream(Stream stream, CompressionMode mode, bool leaveOpen) => new XzStream(stream, mode, leaveOpen);
+        public override Stream CreateStream(Stream stream, CompressionLevel level) => new XzStream(stream, level);
+        public override Stream CreateStream(Stream stream, CompressionLevel level, bool leaveOpen) => new XzStream(stream, level, leaveOpen);
         public override Stream CreateStream(Stream stream, ZLibCompressionOptions options, bool leaveOpen) =>
-            new LzmaStream(stream, options is null ? null! : new LzmaCompressionOptions { Quality = options.CompressionLevel }, leaveOpen);
+            new XzStream(stream, options is null ? null! : new XzCompressionOptions { Quality = options.CompressionLevel }, leaveOpen);
 
-        public override Stream BaseStream(Stream stream) => ((LzmaStream)stream).BaseStream;
+        public override Stream BaseStream(Stream stream) => ((XzStream)stream).BaseStream;
 
         public override int BufferSize => 1 << 16;
 
@@ -26,14 +26,14 @@ namespace System.IO.Compression
         {
             return s_compressedFiles.GetOrAdd(uncompressedPath, static path =>
             {
-                string compressedPath = Path.Combine(Path.GetTempPath(), "LzmaTestData", Path.GetFileName(path) + ".xz");
+                string compressedPath = Path.Combine(Path.GetTempPath(), "XzTestData", Path.GetFileName(path) + ".xz");
                 Directory.CreateDirectory(Path.GetDirectoryName(compressedPath)!);
 
                 if (!File.Exists(compressedPath))
                 {
                     byte[] uncompressedData = File.ReadAllBytes(path);
                     using FileStream fs = File.Create(compressedPath);
-                    using LzmaStream compressor = new(fs, CompressionLevel.Optimal);
+                    using XzStream compressor = new(fs, CompressionLevel.Optimal);
                     compressor.Write(uncompressedData);
                 }
 
@@ -42,11 +42,11 @@ namespace System.IO.Compression
         }
 
         [Fact]
-        public void LzmaStream_DecompressInvalidData_InvalidDataException()
+        public void XzStream_DecompressInvalidData_InvalidDataException()
         {
             byte[] invalidCompressedData = [0x01, 0x02, 0x03, 0x04, 0x05];
             using MemoryStream input = new(invalidCompressedData);
-            using LzmaStream decompressionStream = new(input, CompressionMode.Decompress);
+            using XzStream decompressionStream = new(input, CompressionMode.Decompress);
             byte[] buffer = new byte[16];
 
             Assert.Throws<InvalidDataException>(() => decompressionStream.Read(buffer, 0, buffer.Length));
@@ -57,12 +57,12 @@ namespace System.IO.Compression
         [InlineData(CompressionLevel.Fastest)]
         [InlineData(CompressionLevel.NoCompression)]
         [InlineData(CompressionLevel.SmallestSize)]
-        public void LzmaStream_CompressionLevel_Roundtrips(CompressionLevel level)
+        public void XzStream_CompressionLevel_Roundtrips(CompressionLevel level)
         {
-            byte[] testData = LzmaTestUtils.CreateTestData(5000);
+            byte[] testData = XzTestUtils.CreateTestData(5000);
             using MemoryStream compressed = new();
 
-            using (LzmaStream compressor = new(compressed, level, leaveOpen: true))
+            using (XzStream compressor = new(compressed, level, leaveOpen: true))
             {
                 compressor.Write(testData);
             }
@@ -71,7 +71,7 @@ namespace System.IO.Compression
 
             compressed.Position = 0;
             using MemoryStream decompressed = new();
-            using (LzmaStream decompressor = new(compressed, CompressionMode.Decompress))
+            using (XzStream decompressor = new(compressed, CompressionMode.Decompress))
             {
                 decompressor.CopyTo(decompressed);
             }
@@ -80,19 +80,19 @@ namespace System.IO.Compression
         }
 
         [Fact]
-        public void LzmaStream_WithCompressionOptions_Roundtrips()
+        public void XzStream_WithCompressionOptions_Roundtrips()
         {
-            LzmaCompressionOptions options = new()
+            XzCompressionOptions options = new()
             {
                 Quality = 3,
                 WindowLog = 18,
                 Checksum = LzmaChecksumType.Crc32
             };
 
-            byte[] testData = LzmaTestUtils.CreateTestData(5000);
+            byte[] testData = XzTestUtils.CreateTestData(5000);
             using MemoryStream compressed = new();
 
-            using (LzmaStream compressor = new(compressed, options, leaveOpen: true))
+            using (XzStream compressor = new(compressed, options, leaveOpen: true))
             {
                 compressor.Write(testData);
             }
@@ -101,7 +101,7 @@ namespace System.IO.Compression
 
             compressed.Position = 0;
             using MemoryStream decompressed = new();
-            using (LzmaStream decompressor = new(compressed, CompressionMode.Decompress))
+            using (XzStream decompressor = new(compressed, CompressionMode.Decompress))
             {
                 decompressor.CopyTo(decompressed);
             }
@@ -112,19 +112,19 @@ namespace System.IO.Compression
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task LzmaStream_Roundtrip_Async(bool leaveOpen)
+        public async Task XzStream_Roundtrip_Async(bool leaveOpen)
         {
-            byte[] testData = LzmaTestUtils.CreateTestData(5000);
+            byte[] testData = XzTestUtils.CreateTestData(5000);
             using MemoryStream compressed = new();
 
-            await using (LzmaStream compressor = new(compressed, CompressionLevel.Optimal, leaveOpen: true))
+            await using (XzStream compressor = new(compressed, CompressionLevel.Optimal, leaveOpen: true))
             {
                 await compressor.WriteAsync(testData);
             }
 
             compressed.Position = 0;
             using MemoryStream decompressed = new();
-            await using (LzmaStream decompressor = new(compressed, CompressionMode.Decompress, leaveOpen))
+            await using (XzStream decompressor = new(compressed, CompressionMode.Decompress, leaveOpen))
             {
                 await decompressor.CopyToAsync(decompressed);
             }
@@ -133,32 +133,32 @@ namespace System.IO.Compression
         }
 
         [Fact]
-        public void LzmaStream_NullOptions_ThrowsArgumentNullException()
+        public void XzStream_NullOptions_ThrowsArgumentNullException()
         {
             using MemoryStream ms = new();
-            Assert.Throws<ArgumentNullException>("compressionOptions", () => new LzmaStream(ms, (LzmaCompressionOptions)null!));
+            Assert.Throws<ArgumentNullException>("compressionOptions", () => new XzStream(ms, (XzCompressionOptions)null!));
         }
 
         [Fact]
-        public void LzmaStream_EnableExtremeMode_Roundtrips()
+        public void XzStream_EnableExtremeMode_Roundtrips()
         {
-            LzmaCompressionOptions options = new()
+            XzCompressionOptions options = new()
             {
                 Quality = 3,
                 EnableExtremeMode = true
             };
 
-            byte[] testData = LzmaTestUtils.CreateTestData(5000);
+            byte[] testData = XzTestUtils.CreateTestData(5000);
             using MemoryStream compressed = new();
 
-            using (LzmaStream compressor = new(compressed, options, leaveOpen: true))
+            using (XzStream compressor = new(compressed, options, leaveOpen: true))
             {
                 compressor.Write(testData);
             }
 
             compressed.Position = 0;
             using MemoryStream decompressed = new();
-            using (LzmaStream decompressor = new(compressed, CompressionMode.Decompress))
+            using (XzStream decompressor = new(compressed, CompressionMode.Decompress))
             {
                 decompressor.CopyTo(decompressed);
             }

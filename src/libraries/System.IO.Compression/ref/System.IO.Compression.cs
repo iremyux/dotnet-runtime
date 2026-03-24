@@ -97,9 +97,9 @@ namespace System.IO.Compression
         Crc64 = 2,
         Sha256 = 3,
     }
-    public sealed partial class LzmaCompressionOptions
+    public sealed partial class XzCompressionOptions
     {
-        public LzmaCompressionOptions() { }
+        public XzCompressionOptions() { }
         public static int DefaultQuality { get { throw null; } }
         public static int DefaultWindowLog { get { throw null; } }
         public static int MaxQuality { get { throw null; } }
@@ -111,20 +111,20 @@ namespace System.IO.Compression
         public bool EnableExtremeMode { get { throw null; } set { } }
         public int Quality { get { throw null; } set { } }
     }
-    public sealed partial class LzmaDecoder : System.IDisposable
+    public sealed partial class XzDecoder : System.IDisposable
     {
-        public LzmaDecoder() { }
-        public LzmaDecoder(int maxWindowLog) { }
+        public XzDecoder() { }
+        public XzDecoder(int maxWindowLog) { }
         public System.Buffers.OperationStatus Decompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesConsumed, out int bytesWritten) { throw null; }
         public void Dispose() { }
         public static bool TryDecompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesWritten) { throw null; }
     }
-    public sealed partial class LzmaEncoder : System.IDisposable
+    public sealed partial class XzEncoder : System.IDisposable
     {
-        public LzmaEncoder() { }
-        public LzmaEncoder(int quality) { }
-        public LzmaEncoder(int quality, int windowLog) { }
-        public LzmaEncoder(System.IO.Compression.LzmaCompressionOptions compressionOptions) { }
+        public XzEncoder() { }
+        public XzEncoder(int quality) { }
+        public XzEncoder(int quality, int windowLog) { }
+        public XzEncoder(System.IO.Compression.XzCompressionOptions compressionOptions) { }
         public System.Buffers.OperationStatus Compress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesConsumed, out int bytesWritten, bool isFinalBlock) { throw null; }
         public void Dispose() { }
         public System.Buffers.OperationStatus Flush(System.Span<byte> destination, out int bytesWritten) { throw null; }
@@ -133,11 +133,11 @@ namespace System.IO.Compression
         public static bool TryCompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesWritten, int quality) { throw null; }
         public static bool TryCompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, out int bytesWritten, int quality, int windowLog) { throw null; }
     }
-    public sealed partial class LzmaStream : System.IO.Stream
+    public sealed partial class XzStream : System.IO.Stream
     {
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionLevel compressionLevel, bool leaveOpen = false) { }
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode, bool leaveOpen = false) { }
-        public LzmaStream(System.IO.Stream stream, System.IO.Compression.LzmaCompressionOptions compressionOptions, bool leaveOpen = false) { }
+        public XzStream(System.IO.Stream stream, System.IO.Compression.CompressionLevel compressionLevel, bool leaveOpen = false) { }
+        public XzStream(System.IO.Stream stream, System.IO.Compression.CompressionMode mode, bool leaveOpen = false) { }
+        public XzStream(System.IO.Stream stream, System.IO.Compression.XzCompressionOptions compressionOptions, bool leaveOpen = false) { }
         public System.IO.Stream BaseStream { get { throw null; } }
         public override bool CanRead { get { throw null; } }
         public override bool CanSeek { get { throw null; } }

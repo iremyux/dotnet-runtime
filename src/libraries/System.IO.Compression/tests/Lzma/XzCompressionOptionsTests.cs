@@ -5,14 +5,14 @@ using Xunit;
 
 namespace System.IO.Compression
 {
-    public class LzmaCompressionOptionsTests
+    public class XzCompressionOptionsTests
     {
         [Fact]
         public void DefaultValues_AreCorrect()
         {
-            LzmaCompressionOptions options = new();
+            XzCompressionOptions options = new();
 
-            Assert.Equal(LzmaCompressionOptions.DefaultQuality, options.Quality);
+            Assert.Equal(XzCompressionOptions.DefaultQuality, options.Quality);
             Assert.Equal(0, options.WindowLog);
             Assert.False(options.EnableExtremeMode);
             Assert.Equal(LzmaChecksumType.Crc64, options.Checksum);
@@ -25,7 +25,7 @@ namespace System.IO.Compression
         [InlineData(9)]
         public void Quality_SetToValidRange_Succeeds(int quality)
         {
-            LzmaCompressionOptions options = new();
+            XzCompressionOptions options = new();
             options.Quality = quality;
             Assert.Equal(quality, options.Quality);
         }
@@ -35,7 +35,7 @@ namespace System.IO.Compression
         [InlineData(10)]
         public void Quality_SetOutOfRange_ThrowsArgumentOutOfRangeException(int quality)
         {
-            LzmaCompressionOptions options = new();
+            XzCompressionOptions options = new();
             Assert.Throws<ArgumentOutOfRangeException>(() => options.Quality = quality);
         }
 
@@ -45,7 +45,7 @@ namespace System.IO.Compression
         [InlineData(30)]
         public void WindowLog_SetToValidRange_Succeeds(int windowLog)
         {
-            LzmaCompressionOptions options = new();
+            XzCompressionOptions options = new();
             options.WindowLog = windowLog;
             Assert.Equal(windowLog, options.WindowLog);
         }
@@ -53,7 +53,7 @@ namespace System.IO.Compression
         [Fact]
         public void WindowLog_SetToZero_UsesDefault()
         {
-            LzmaCompressionOptions options = new();
+            XzCompressionOptions options = new();
             options.WindowLog = 0;
             Assert.Equal(0, options.WindowLog);
         }
@@ -63,14 +63,14 @@ namespace System.IO.Compression
         [InlineData(31)]
         public void WindowLog_SetOutOfRange_ThrowsArgumentOutOfRangeException(int windowLog)
         {
-            LzmaCompressionOptions options = new();
+            XzCompressionOptions options = new();
             Assert.Throws<ArgumentOutOfRangeException>(() => options.WindowLog = windowLog);
         }
 
         [Fact]
         public void EnableExtremeMode_SetAndGet_Succeeds()
         {
-            LzmaCompressionOptions options = new();
+            XzCompressionOptions options = new();
             options.EnableExtremeMode = true;
             Assert.True(options.EnableExtremeMode);
 
@@ -85,7 +85,7 @@ namespace System.IO.Compression
         [InlineData(LzmaChecksumType.Sha256)]
         public void Checksum_SetToValidValues_Succeeds(LzmaChecksumType checksum)
         {
-            LzmaCompressionOptions options = new();
+            XzCompressionOptions options = new();
             options.Checksum = checksum;
             Assert.Equal(checksum, options.Checksum);
         }
@@ -93,12 +93,12 @@ namespace System.IO.Compression
         [Fact]
         public void StaticProperties_ReturnExpectedValues()
         {
-            Assert.Equal(0, LzmaCompressionOptions.MinQuality);
-            Assert.Equal(9, LzmaCompressionOptions.MaxQuality);
-            Assert.Equal(6, LzmaCompressionOptions.DefaultQuality);
-            Assert.Equal(12, LzmaCompressionOptions.MinWindowLog);
-            Assert.Equal(30, LzmaCompressionOptions.MaxWindowLog);
-            Assert.Equal(23, LzmaCompressionOptions.DefaultWindowLog);
+            Assert.Equal(0, XzCompressionOptions.MinQuality);
+            Assert.Equal(9, XzCompressionOptions.MaxQuality);
+            Assert.Equal(6, XzCompressionOptions.DefaultQuality);
+            Assert.Equal(12, XzCompressionOptions.MinWindowLog);
+            Assert.Equal(30, XzCompressionOptions.MaxWindowLog);
+            Assert.Equal(23, XzCompressionOptions.DefaultWindowLog);
         }
     }
 }

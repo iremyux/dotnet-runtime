@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace System.IO.Compression
 {
-    public sealed partial class LzmaStream
+    public sealed partial class XzStream
     {
-        private LzmaDecoder? _decoder;
+        private XzDecoder? _decoder;
         private bool _nonEmptyInput;
 
         private bool TryDecompress(Span<byte> destination, out int bytesWritten, out OperationStatus lastResult)

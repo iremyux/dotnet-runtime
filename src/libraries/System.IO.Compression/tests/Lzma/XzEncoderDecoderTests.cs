@@ -6,7 +6,7 @@ using Xunit;
 
 namespace System.IO.Compression
 {
-    public class LzmaEncoderDecoderTests : EncoderDecoderTestBase
+    public class XzEncoderDecoderTests : EncoderDecoderTestBase
     {
         protected override bool SupportsDictionaries => false;
         protected override bool SupportsReset => false;
@@ -19,11 +19,11 @@ namespace System.IO.Compression
         protected override int InvalidWindowLogTooLow => 11;
         protected override int InvalidWindowLogTooHigh => 31;
 
-        private sealed class LzmaEncoderAdapter : EncoderAdapter
+        private sealed class XzEncoderAdapter : EncoderAdapter
         {
-            private readonly LzmaEncoder _encoder;
+            private readonly XzEncoder _encoder;
 
-            public LzmaEncoderAdapter(LzmaEncoder encoder)
+            public XzEncoderAdapter(XzEncoder encoder)
             {
                 _encoder = encoder;
             }
@@ -38,11 +38,11 @@ namespace System.IO.Compression
             public override void Reset() => throw new NotSupportedException();
         }
 
-        private sealed class LzmaDecoderAdapter : DecoderAdapter
+        private sealed class XzDecoderAdapter : DecoderAdapter
         {
-            private readonly LzmaDecoder _decoder;
+            private readonly XzDecoder _decoder;
 
-            public LzmaDecoderAdapter(LzmaDecoder decoder)
+            public XzDecoderAdapter(XzDecoder decoder)
             {
                 _decoder = decoder;
             }
@@ -55,16 +55,16 @@ namespace System.IO.Compression
         }
 
         protected override EncoderAdapter CreateEncoder() =>
-            new LzmaEncoderAdapter(new LzmaEncoder());
+            new XzEncoderAdapter(new XzEncoder());
 
         protected override EncoderAdapter CreateEncoder(int quality, int windowLog) =>
-            new LzmaEncoderAdapter(new LzmaEncoder(quality, windowLog));
+            new XzEncoderAdapter(new XzEncoder(quality, windowLog));
 
         protected override EncoderAdapter CreateEncoder(DictionaryAdapter dictionary, int windowLog) =>
             throw new NotSupportedException();
 
         protected override DecoderAdapter CreateDecoder() =>
-            new LzmaDecoderAdapter(new LzmaDecoder());
+            new XzDecoderAdapter(new XzDecoder());
 
         protected override DecoderAdapter CreateDecoder(DictionaryAdapter dictionary) =>
             throw new NotSupportedException();
@@ -73,22 +73,22 @@ namespace System.IO.Compression
             throw new NotSupportedException();
 
         protected override bool TryCompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten) =>
-            LzmaEncoder.TryCompress(source, destination, out bytesWritten);
+            XzEncoder.TryCompress(source, destination, out bytesWritten);
 
         protected override bool TryCompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten, int quality, int windowLog) =>
-            LzmaEncoder.TryCompress(source, destination, out bytesWritten, quality, windowLog);
+            XzEncoder.TryCompress(source, destination, out bytesWritten, quality, windowLog);
 
         protected override bool TryCompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten, DictionaryAdapter dictionary, int windowLog) =>
             throw new NotSupportedException();
 
         protected override bool TryDecompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten) =>
-            LzmaDecoder.TryDecompress(source, destination, out bytesWritten);
+            XzDecoder.TryDecompress(source, destination, out bytesWritten);
 
         protected override bool TryDecompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten, DictionaryAdapter dictionary) =>
             throw new NotSupportedException();
 
         protected override long GetMaxCompressedLength(long inputLength) =>
-            LzmaEncoder.GetMaxCompressedLength(inputLength);
+            XzEncoder.GetMaxCompressedLength(inputLength);
 
         [Fact]
         public void GetMaxCompressedLength_OutOfRange_ThrowsArgumentOutOfRangeException()
@@ -103,24 +103,24 @@ namespace System.IO.Compression
         [Fact]
         public void Encoder_WithCompressionOptions_Roundtrips()
         {
-            LzmaCompressionOptions options = new()
+            XzCompressionOptions options = new()
             {
                 Quality = 3,
                 WindowLog = 18,
                 Checksum = LzmaChecksumType.Crc32
             };
 
-            byte[] input = LzmaTestUtils.CreateTestData(5000);
-            byte[] compressed = new byte[LzmaEncoder.GetMaxCompressedLength(input.Length)];
+            byte[] input = XzTestUtils.CreateTestData(5000);
+            byte[] compressed = new byte[XzEncoder.GetMaxCompressedLength(input.Length)];
             byte[] decompressed = new byte[input.Length];
 
-            using LzmaEncoder encoder = new(options);
+            using XzEncoder encoder = new(options);
             OperationStatus result = encoder.Compress(input, compressed, out int bytesConsumed, out int bytesWritten, isFinalBlock: true);
             Assert.Equal(OperationStatus.Done, result);
             Assert.Equal(input.Length, bytesConsumed);
             Assert.True(bytesWritten > 0);
 
-            Assert.True(LzmaDecoder.TryDecompress(compressed.AsSpan(0, bytesWritten), decompressed, out int decompressedLength));
+            Assert.True(XzDecoder.TryDecompress(compressed.AsSpan(0, bytesWritten), decompressed, out int decompressedLength));
             Assert.Equal(input.Length, decompressedLength);
             Assert.Equal(input, decompressed);
         }
@@ -132,21 +132,21 @@ namespace System.IO.Compression
         [InlineData(LzmaChecksumType.Sha256)]
         public void Encoder_ChecksumType_Roundtrips(LzmaChecksumType checksumType)
         {
-            LzmaCompressionOptions options = new()
+            XzCompressionOptions options = new()
             {
                 Quality = 3,
                 Checksum = checksumType
             };
 
-            byte[] input = LzmaTestUtils.CreateTestData(1000);
-            byte[] compressed = new byte[LzmaEncoder.GetMaxCompressedLength(input.Length)];
+            byte[] input = XzTestUtils.CreateTestData(1000);
+            byte[] compressed = new byte[XzEncoder.GetMaxCompressedLength(input.Length)];
             byte[] decompressed = new byte[input.Length];
 
-            using LzmaEncoder encoder = new(options);
+            using XzEncoder encoder = new(options);
             OperationStatus result = encoder.Compress(input, compressed, out _, out int bytesWritten, isFinalBlock: true);
             Assert.Equal(OperationStatus.Done, result);
 
-            Assert.True(LzmaDecoder.TryDecompress(compressed.AsSpan(0, bytesWritten), decompressed, out int decompressedLength));
+            Assert.True(XzDecoder.TryDecompress(compressed.AsSpan(0, bytesWritten), decompressed, out int decompressedLength));
             Assert.Equal(input.Length, decompressedLength);
             Assert.Equal(input, decompressed);
         }
@@ -154,21 +154,21 @@ namespace System.IO.Compression
         [Fact]
         public void Encoder_EnableExtremeMode_Roundtrips()
         {
-            LzmaCompressionOptions options = new()
+            XzCompressionOptions options = new()
             {
                 Quality = 3,
                 EnableExtremeMode = true
             };
 
-            byte[] input = LzmaTestUtils.CreateTestData(5000);
-            byte[] compressed = new byte[LzmaEncoder.GetMaxCompressedLength(input.Length)];
+            byte[] input = XzTestUtils.CreateTestData(5000);
+            byte[] compressed = new byte[XzEncoder.GetMaxCompressedLength(input.Length)];
             byte[] decompressed = new byte[input.Length];
 
-            using LzmaEncoder encoder = new(options);
+            using XzEncoder encoder = new(options);
             OperationStatus result = encoder.Compress(input, compressed, out _, out int bytesWritten, isFinalBlock: true);
             Assert.Equal(OperationStatus.Done, result);
 
-            Assert.True(LzmaDecoder.TryDecompress(compressed.AsSpan(0, bytesWritten), decompressed, out int decompressedLength));
+            Assert.True(XzDecoder.TryDecompress(compressed.AsSpan(0, bytesWritten), decompressed, out int decompressedLength));
             Assert.Equal(input.Length, decompressedLength);
             Assert.Equal(input, decompressed);
         }
@@ -180,12 +180,12 @@ namespace System.IO.Compression
         [InlineData(9)]
         public void TryCompress_WithQuality_Roundtrips(int quality)
         {
-            byte[] input = LzmaTestUtils.CreateTestData(1000);
-            byte[] compressed = new byte[LzmaEncoder.GetMaxCompressedLength(input.Length)];
+            byte[] input = XzTestUtils.CreateTestData(1000);
+            byte[] compressed = new byte[XzEncoder.GetMaxCompressedLength(input.Length)];
             byte[] decompressed = new byte[input.Length];
 
-            Assert.True(LzmaEncoder.TryCompress(input, compressed, out int bytesWritten, quality));
-            Assert.True(LzmaDecoder.TryDecompress(compressed.AsSpan(0, bytesWritten), decompressed, out int decompressedLength));
+            Assert.True(XzEncoder.TryCompress(input, compressed, out int bytesWritten, quality));
+            Assert.True(XzDecoder.TryDecompress(compressed.AsSpan(0, bytesWritten), decompressed, out int decompressedLength));
             Assert.Equal(input.Length, decompressedLength);
             Assert.Equal(input, decompressed);
         }
@@ -193,8 +193,21 @@ namespace System.IO.Compression
         [Fact]
         public void Decoder_MaxWindowLog_InvalidValues()
         {
-            Assert.Throws<ArgumentOutOfRangeException>("maxWindowLog", () => new LzmaDecoder(maxWindowLog: 11));
-            Assert.Throws<ArgumentOutOfRangeException>("maxWindowLog", () => new LzmaDecoder(maxWindowLog: 31));
+            Assert.Throws<ArgumentOutOfRangeException>("maxWindowLog", () => new XzDecoder(maxWindowLog: 11));
+            Assert.Throws<ArgumentOutOfRangeException>("maxWindowLog", () => new XzDecoder(maxWindowLog: 31));
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(10)]
+        [InlineData(int.MinValue)]
+        [InlineData(int.MaxValue)]
+        public void TryCompress_InvalidQuality_Static(int quality)
+        {
+            byte[] input = XzTestUtils.CreateTestData(100);
+            byte[] output = new byte[XzEncoder.GetMaxCompressedLength(input.Length)];
+
+            Assert.Throws<ArgumentOutOfRangeException>("quality", () => XzEncoder.TryCompress(input, output, out _, quality));
         }
     }
 }

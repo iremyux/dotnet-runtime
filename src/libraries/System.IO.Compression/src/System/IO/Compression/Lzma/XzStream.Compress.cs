@@ -8,33 +8,33 @@ using System.Threading.Tasks;
 
 namespace System.IO.Compression
 {
-    public sealed partial class LzmaStream
+    public sealed partial class XzStream
     {
-        private LzmaEncoder? _encoder;
+        private XzEncoder? _encoder;
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaStream" /> class by using the specified stream and compression level, and optionally leaves the stream open.</summary>
+        /// <summary>Initializes a new instance of the <see cref="XzStream" /> class by using the specified stream and compression level, and optionally leaves the stream open.</summary>
         /// <param name="stream">The stream to which compressed data is written.</param>
         /// <param name="compressionLevel">One of the enumeration values that indicates whether to emphasize speed or compression efficiency when compressing data to the stream.</param>
-        /// <param name="leaveOpen"><see langword="true" /> to leave the stream open after the <see cref="LzmaStream" /> object is disposed; otherwise, <see langword="false" />.</param>
+        /// <param name="leaveOpen"><see langword="true" /> to leave the stream open after the <see cref="XzStream" /> object is disposed; otherwise, <see langword="false" />.</param>
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="stream"/> does not support writing.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="compressionLevel"/> is not a valid <see cref="CompressionLevel"/> value.</exception>
-        public LzmaStream(Stream stream, CompressionLevel compressionLevel, bool leaveOpen = false)
+        public XzStream(Stream stream, CompressionLevel compressionLevel, bool leaveOpen = false)
         {
             Init(stream, CompressionMode.Compress);
             _mode = CompressionMode.Compress;
             _leaveOpen = leaveOpen;
 
-            _encoder = new LzmaEncoder(LzmaUtils.GetQualityFromCompressionLevel(compressionLevel));
+            _encoder = new XzEncoder(LzmaUtils.GetQualityFromCompressionLevel(compressionLevel));
         }
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaStream" /> class by using the specified stream, compression options, and optionally leaves the stream open.</summary>
+        /// <summary>Initializes a new instance of the <see cref="XzStream" /> class by using the specified stream, compression options, and optionally leaves the stream open.</summary>
         /// <param name="stream">The stream to which compressed data is written.</param>
         /// <param name="compressionOptions">The options to use for LZMA compression.</param>
-        /// <param name="leaveOpen"><see langword="true" /> to leave the stream open after the <see cref="LzmaStream" /> object is disposed; otherwise, <see langword="false" />.</param>
+        /// <param name="leaveOpen"><see langword="true" /> to leave the stream open after the <see cref="XzStream" /> object is disposed; otherwise, <see langword="false" />.</param>
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="compressionOptions"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="stream"/> does not support writing.</exception>
-        public LzmaStream(Stream stream, LzmaCompressionOptions compressionOptions, bool leaveOpen = false)
+        public XzStream(Stream stream, XzCompressionOptions compressionOptions, bool leaveOpen = false)
         {
             ArgumentNullException.ThrowIfNull(compressionOptions);
 
@@ -42,7 +42,7 @@ namespace System.IO.Compression
             _mode = CompressionMode.Compress;
             _leaveOpen = leaveOpen;
 
-            _encoder = new LzmaEncoder(compressionOptions);
+            _encoder = new XzEncoder(compressionOptions);
         }
 
         private void WriteCore(ReadOnlySpan<byte> buffer, bool isFinalBlock = false, bool flush = false, bool throwOnActiveRwOp = true)

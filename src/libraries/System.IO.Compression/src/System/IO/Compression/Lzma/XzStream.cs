@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace System.IO.Compression
 {
-    /// <summary>Provides methods and properties used to compress and decompress streams by using the LZMA/XZ data format specification.</summary>
-    public sealed partial class LzmaStream : Stream
+    /// <summary>Provides methods and properties used to compress and decompress streams by using the XZ data format specification.</summary>
+    public sealed partial class XzStream : Stream
     {
         private const int DefaultInternalBufferSize = 65536; // 64KB default buffer
         private Stream _stream;
@@ -48,13 +48,13 @@ namespace System.IO.Compression
             _buffer = new ArrayBuffer(DefaultInternalBufferSize, usePool: true);
         }
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaStream" /> class by using the specified stream and compression mode, and optionally leaves the stream open.</summary>
+        /// <summary>Initializes a new instance of the <see cref="XzStream" /> class by using the specified stream and compression mode, and optionally leaves the stream open.</summary>
         /// <param name="stream">The stream to which compressed data is written or from which data to decompress is read.</param>
         /// <param name="mode">One of the enumeration values that indicates whether to compress data to the stream or decompress data from the stream.</param>
-        /// <param name="leaveOpen"><see langword="true" /> to leave the stream open after the <see cref="LzmaStream" /> object is disposed; otherwise, <see langword="false" />.</param>
+        /// <param name="leaveOpen"><see langword="true" /> to leave the stream open after the <see cref="XzStream" /> object is disposed; otherwise, <see langword="false" />.</param>
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="stream"/> does not support writing and <paramref name="mode"/> is <see cref="CompressionMode.Compress"/> or <paramref name="stream"/> does not support reading and <paramref name="mode"/> is <see cref="CompressionMode.Decompress"/>.</exception>
-        public LzmaStream(Stream stream, CompressionMode mode, bool leaveOpen = false)
+        public XzStream(Stream stream, CompressionMode mode, bool leaveOpen = false)
         {
             Init(stream, mode);
             _leaveOpen = leaveOpen;
@@ -62,11 +62,11 @@ namespace System.IO.Compression
 
             if (mode == CompressionMode.Compress)
             {
-                _encoder = new LzmaEncoder();
+                _encoder = new XzEncoder();
             }
             else
             {
-                _decoder = new LzmaDecoder();
+                _decoder = new XzDecoder();
             }
         }
 
@@ -118,7 +118,7 @@ namespace System.IO.Compression
         /// <exception cref="NotSupportedException">In all cases.</exception>
         public override void SetLength(long value) => throw new NotSupportedException();
 
-        /// <summary>Releases the unmanaged resources used by the <see cref="LzmaStream" /> and optionally releases the managed resources.</summary>
+        /// <summary>Releases the unmanaged resources used by the <see cref="XzStream" /> and optionally releases the managed resources.</summary>
         /// <param name="disposing"><see langword="true" /> to release both managed and unmanaged resources; <see langword="false" /> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
@@ -144,7 +144,7 @@ namespace System.IO.Compression
             }
         }
 
-        /// <summary>Asynchronously releases the unmanaged resources used by the <see cref="LzmaStream" />.</summary>
+        /// <summary>Asynchronously releases the unmanaged resources used by the <see cref="XzStream" />.</summary>
         /// <returns>A task that represents the asynchronous dispose operation.</returns>
         public override async ValueTask DisposeAsync()
         {

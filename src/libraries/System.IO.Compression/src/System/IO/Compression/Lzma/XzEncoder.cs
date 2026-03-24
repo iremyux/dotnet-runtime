@@ -9,8 +9,8 @@ using Microsoft.Win32.SafeHandles;
 
 namespace System.IO.Compression
 {
-    /// <summary>Provides methods and properties to compress data using LZMA/XZ compression.</summary>
-    public sealed class LzmaEncoder : IDisposable
+    /// <summary>Provides methods and properties to compress data using XZ compression.</summary>
+    public sealed class XzEncoder : IDisposable
     {
         internal SafeLzmaHandle _handle;
         private bool _disposed;
@@ -20,9 +20,9 @@ namespace System.IO.Compression
         /// </summary>
         private bool _finished;
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaEncoder"/> class with default settings.</summary>
-        /// <exception cref="IOException">Failed to create the <see cref="LzmaEncoder"/> instance.</exception>
-        public LzmaEncoder()
+        /// <summary>Initializes a new instance of the <see cref="XzEncoder"/> class with default settings.</summary>
+        /// <exception cref="IOException">Failed to create the <see cref="XzEncoder"/> instance.</exception>
+        public XzEncoder()
         {
             _disposed = false;
             InitializeEncoder();
@@ -38,11 +38,11 @@ namespace System.IO.Compression
             }
         }
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaEncoder"/> class with the specified quality level.</summary>
+        /// <summary>Initializes a new instance of the <see cref="XzEncoder"/> class with the specified quality level.</summary>
         /// <param name="quality">The compression quality level (0-9, where higher values provide better compression but are slower).</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="quality"/> is not between 0 and 9.</exception>
-        /// <exception cref="IOException">Failed to create the <see cref="LzmaEncoder"/> instance.</exception>
-        public LzmaEncoder(int quality)
+        /// <exception cref="IOException">Failed to create the <see cref="XzEncoder"/> instance.</exception>
+        public XzEncoder(int quality)
         {
             _disposed = false;
             InitializeEncoder();
@@ -59,12 +59,12 @@ namespace System.IO.Compression
             }
         }
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaEncoder"/> class with the specified quality and window size.</summary>
+        /// <summary>Initializes a new instance of the <see cref="XzEncoder"/> class with the specified quality and window size.</summary>
         /// <param name="quality">The compression quality level (0-9, where higher values provide better compression but are slower).</param>
         /// <param name="windowLog">The window size for compression, expressed as base 2 logarithm.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="quality"/> is not between 0 and 9, or <paramref name="windowLog"/> is not between the minimum and maximum allowed values.</exception>
-        /// <exception cref="IOException">Failed to create the <see cref="LzmaEncoder"/> instance.</exception>
-        public LzmaEncoder(int quality, int windowLog)
+        /// <exception cref="IOException">Failed to create the <see cref="XzEncoder"/> instance.</exception>
+        public XzEncoder(int quality, int windowLog)
         {
             _disposed = false;
             InitializeEncoder();
@@ -82,12 +82,12 @@ namespace System.IO.Compression
             }
         }
 
-        /// <summary>Initializes a new instance of the <see cref="LzmaEncoder"/> class with the specified compression options.</summary>
+        /// <summary>Initializes a new instance of the <see cref="XzEncoder"/> class with the specified compression options.</summary>
         /// <param name="compressionOptions">The compression options to use.</param>
         /// <exception cref="ArgumentNullException"><paramref name="compressionOptions"/> is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">A parameter from <paramref name="compressionOptions"/> is not between the minimum and maximum allowed values.</exception>
-        /// <exception cref="IOException">Failed to create the <see cref="LzmaEncoder"/> instance.</exception>
-        public LzmaEncoder(LzmaCompressionOptions compressionOptions)
+        /// <exception cref="IOException">Failed to create the <see cref="XzEncoder"/> instance.</exception>
+        public XzEncoder(XzCompressionOptions compressionOptions)
         {
             ArgumentNullException.ThrowIfNull(compressionOptions);
 
@@ -280,12 +280,12 @@ namespace System.IO.Compression
             // lzma_stream_buffer_bound returns 0 on error (input too large)
             if (result == 0 && inputLength > 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(inputLength), SR.LzmaEncoder_InputLengthTooLarge);
+                throw new ArgumentOutOfRangeException(nameof(inputLength), SR.XzEncoder_InputLengthTooLarge);
             }
 
             if (result > long.MaxValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(inputLength), SR.LzmaEncoder_InputLengthTooLarge);
+                throw new ArgumentOutOfRangeException(nameof(inputLength), SR.XzEncoder_InputLengthTooLarge);
             }
 
             return (long)result;
@@ -385,7 +385,7 @@ namespace System.IO.Compression
             }
         }
 
-        /// <summary>Releases all resources used by the <see cref="LzmaEncoder"/>.</summary>
+        /// <summary>Releases all resources used by the <see cref="XzEncoder"/>.</summary>
         public void Dispose()
         {
             _disposed = true;
@@ -394,7 +394,7 @@ namespace System.IO.Compression
 
         private void EnsureNotDisposed()
         {
-            ObjectDisposedException.ThrowIf(_disposed, nameof(LzmaEncoder));
+            ObjectDisposedException.ThrowIf(_disposed, nameof(XzEncoder));
         }
 
         private static void ValidateQuality(int quality)

@@ -63,13 +63,14 @@
     <Compile Include="System\IO\Compression\ZLibCompressionOptions.cs" />
     <Compile Include="System\IO\Compression\ZLibStream.cs" />
     <Compile Include="System\IO\Compression\ZipCompressionMethod.cs" />
-    <Compile Include="System\IO\Compression\Lzma\LzmaCompressionOptions.cs" />
-    <Compile Include="System\IO\Compression\Lzma\LzmaDecoder.cs" />
-    <Compile Include="System\IO\Compression\Lzma\LzmaEncoder.cs" />
-    <Compile Include="System\IO\Compression\Lzma\LzmaStream.cs" />
-    <Compile Include="System\IO\Compression\Lzma\LzmaStream.Compress.cs" />
-    <Compile Include="System\IO\Compression\Lzma\LzmaStream.Decompress.cs" />
+    <Compile Include="System\IO\Compression\Lzma\LzmaChecksumType.cs" />
     <Compile Include="System\IO\Compression\Lzma\LzmaUtils.cs" />
+    <Compile Include="System\IO\Compression\Lzma\XzCompressionOptions.cs" />
+    <Compile Include="System\IO\Compression\Lzma\XzDecoder.cs" />
+    <Compile Include="System\IO\Compression\Lzma\XzEncoder.cs" />
+    <Compile Include="System\IO\Compression\Lzma\XzStream.cs" />
+    <Compile Include="System\IO\Compression\Lzma\XzStream.Compress.cs" />
+    <Compile Include="System\IO\Compression\Lzma\XzStream.Decompress.cs" />
     <Compile Include="$(CommonPath)System\Obsoletions.cs"
              Link="Common\System\Obsoletions.cs" />
   </ItemGroup>

@@ -66,18 +66,18 @@ namespace System.IO.Compression
         public bool EnableExtremeMode { get; set; }
 
         /// <summary>Gets or sets the integrity checksum type for the compressed data.</summary>
-        /// <value>The integrity checksum type. The default is <see cref="LzmaChecksumType.Crc64"/>.</value>
+        /// <value>The integrity checksum type. The default is <see cref="XzChecksumType.Crc64"/>.</value>
         /// <remarks>
         /// The checksum is calculated from the uncompressed data and stored in the .xz container.
         /// <list type="bullet">
-        ///   <item><description><see cref="LzmaChecksumType.None"/>: No integrity checksum (fastest, smallest output)</description></item>
-        ///   <item><description><see cref="LzmaChecksumType.Crc32"/>: CRC32 (4 bytes overhead)</description></item>
-        ///   <item><description><see cref="LzmaChecksumType.Crc64"/>: CRC64 (8 bytes overhead, recommended)</description></item>
-        ///   <item><description><see cref="LzmaChecksumType.Sha256"/>: SHA-256 (32 bytes overhead, most secure)</description></item>
+        ///   <item><description><see cref="XzChecksumType.None"/>: No integrity checksum (fastest, smallest output)</description></item>
+        ///   <item><description><see cref="XzChecksumType.Crc32"/>: CRC32 (4 bytes overhead)</description></item>
+        ///   <item><description><see cref="XzChecksumType.Crc64"/>: CRC64 (8 bytes overhead, recommended)</description></item>
+        ///   <item><description><see cref="XzChecksumType.Sha256"/>: SHA-256 (32 bytes overhead, most secure)</description></item>
         /// </list>
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">The value is not a valid <see cref="LzmaChecksumType"/> value.</exception>
-        public LzmaChecksumType Checksum { get; set; } = LzmaChecksumType.Crc64;
+        /// <exception cref="ArgumentOutOfRangeException">The value is not a valid <see cref="XzChecksumType"/> value.</exception>
+        public XzChecksumType Checksum { get; set; } = XzChecksumType.Crc64;
 
         /// <summary>Gets or sets the window size, expressed as base 2 logarithm.</summary>
         /// <value>The window size for compression, expressed as base 2 logarithm. A value of 0 means the default size based on the preset will be used.</value>

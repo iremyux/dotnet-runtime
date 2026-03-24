@@ -107,7 +107,7 @@ namespace System.IO.Compression
             {
                 Quality = 3,
                 WindowLog = 18,
-                Checksum = LzmaChecksumType.Crc32
+                Checksum = XzChecksumType.Crc32
             };
 
             byte[] input = XzTestUtils.CreateTestData(5000);
@@ -126,11 +126,11 @@ namespace System.IO.Compression
         }
 
         [Theory]
-        [InlineData(LzmaChecksumType.None)]
-        [InlineData(LzmaChecksumType.Crc32)]
-        [InlineData(LzmaChecksumType.Crc64)]
-        [InlineData(LzmaChecksumType.Sha256)]
-        public void Encoder_ChecksumType_Roundtrips(LzmaChecksumType checksumType)
+        [InlineData(XzChecksumType.None)]
+        [InlineData(XzChecksumType.Crc32)]
+        [InlineData(XzChecksumType.Crc64)]
+        [InlineData(XzChecksumType.Sha256)]
+        public void Encoder_ChecksumType_Roundtrips(XzChecksumType checksumType)
         {
             XzCompressionOptions options = new()
             {

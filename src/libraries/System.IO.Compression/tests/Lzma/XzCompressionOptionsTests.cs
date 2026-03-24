@@ -15,7 +15,7 @@ namespace System.IO.Compression
             Assert.Equal(XzCompressionOptions.DefaultQuality, options.Quality);
             Assert.Equal(0, options.WindowLog);
             Assert.False(options.EnableExtremeMode);
-            Assert.Equal(LzmaChecksumType.Crc64, options.Checksum);
+            Assert.Equal(XzChecksumType.Crc64, options.Checksum);
         }
 
         [Theory]
@@ -79,11 +79,11 @@ namespace System.IO.Compression
         }
 
         [Theory]
-        [InlineData(LzmaChecksumType.None)]
-        [InlineData(LzmaChecksumType.Crc32)]
-        [InlineData(LzmaChecksumType.Crc64)]
-        [InlineData(LzmaChecksumType.Sha256)]
-        public void Checksum_SetToValidValues_Succeeds(LzmaChecksumType checksum)
+        [InlineData(XzChecksumType.None)]
+        [InlineData(XzChecksumType.Crc32)]
+        [InlineData(XzChecksumType.Crc64)]
+        [InlineData(XzChecksumType.Sha256)]
+        public void Checksum_SetToValidValues_Succeeds(XzChecksumType checksum)
         {
             XzCompressionOptions options = new();
             options.Checksum = checksum;

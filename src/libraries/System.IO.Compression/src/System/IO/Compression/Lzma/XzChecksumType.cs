@@ -4,7 +4,7 @@
 namespace System.IO.Compression
 {
     /// <summary>Specifies the integrity checksum type for LZMA/XZ compression.</summary>
-    public enum LzmaChecksumType
+    public enum XzChecksumType
     {
         /// <summary>No integrity checksum is calculated.</summary>
         None = 0,

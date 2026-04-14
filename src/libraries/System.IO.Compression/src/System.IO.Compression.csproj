@@ -63,7 +63,7 @@
     <Compile Include="System\IO\Compression\ZLibCompressionOptions.cs" />
     <Compile Include="System\IO\Compression\ZLibStream.cs" />
     <Compile Include="System\IO\Compression\ZipCompressionMethod.cs" />
-    <Compile Include="System\IO\Compression\Lzma\LzmaChecksumType.cs" />
+    <Compile Include="System\IO\Compression\Lzma\XzChecksumType.cs" />
     <Compile Include="System\IO\Compression\Lzma\LzmaUtils.cs" />
     <Compile Include="System\IO\Compression\Lzma\XzCompressionOptions.cs" />
     <Compile Include="System\IO\Compression\Lzma\XzDecoder.cs" />

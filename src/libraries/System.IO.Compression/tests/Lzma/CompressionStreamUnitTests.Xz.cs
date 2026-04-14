@@ -86,7 +86,7 @@ namespace System.IO.Compression
             {
                 Quality = 3,
                 WindowLog = 18,
-                Checksum = LzmaChecksumType.Crc32
+                Checksum = XzChecksumType.Crc32
             };
 
             byte[] testData = XzTestUtils.CreateTestData(5000);

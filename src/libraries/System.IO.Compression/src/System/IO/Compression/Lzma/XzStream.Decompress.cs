@@ -168,6 +168,7 @@ namespace System.IO.Compression
             }
 
             EnsureNotDisposed();
+            cancellationToken.ThrowIfCancellationRequested();
             BeginRWOperation();
 
             try

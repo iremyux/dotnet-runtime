@@ -116,6 +116,7 @@ namespace System.IO.Compression
                             or LzmaNative.LzmaRetCode.UnsupportedCheck
                             or LzmaNative.LzmaRetCode.GetCheck => OperationStatus.NeedMoreData,
                         LzmaNative.LzmaRetCode.StreamEnd => FinishAndReturnDone(),
+                        LzmaNative.LzmaRetCode.BufError when strm.AvailIn == 0 => OperationStatus.NeedMoreData,
                         LzmaNative.LzmaRetCode.BufError => OperationStatus.DestinationTooSmall,
                         LzmaNative.LzmaRetCode.DataError or LzmaNative.LzmaRetCode.FormatError => OperationStatus.InvalidData,
                         _ => ThrowAndReturnInvalid(ret)

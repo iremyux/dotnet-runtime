@@ -244,8 +244,18 @@ namespace System.IO.Compression
 
                     return ret switch
                     {
-                        LzmaNative.LzmaRetCode.Ok => strm.AvailIn == 0 ? OperationStatus.Done : OperationStatus.DestinationTooSmall,
-                        LzmaNative.LzmaRetCode.StreamEnd => FinishAndReturnDone(),
+                        // For Run: all input consumed means done; otherwise output buffer is full.
+                        LzmaNative.LzmaRetCode.Ok when action == LzmaNative.LzmaAction.Run
+                            => strm.AvailIn == 0 ? OperationStatus.Done : OperationStatus.DestinationTooSmall,
+                        // For SyncFlush/FullFlush/Finish: Ok means more calls needed to complete the action.
+                        LzmaNative.LzmaRetCode.Ok
+                            => OperationStatus.DestinationTooSmall,
+                        // StreamEnd from Finish means the stream is permanently done.
+                        LzmaNative.LzmaRetCode.StreamEnd when action == LzmaNative.LzmaAction.Finish
+                            => FinishAndReturnDone(),
+                        // StreamEnd from SyncFlush/FullFlush means flush is complete (encoder can still accept data).
+                        LzmaNative.LzmaRetCode.StreamEnd
+                            => OperationStatus.Done,
                         LzmaNative.LzmaRetCode.BufError => OperationStatus.DestinationTooSmall,
                         LzmaNative.LzmaRetCode.DataError => OperationStatus.InvalidData,
                         _ => ThrowAndReturnInvalid(ret)

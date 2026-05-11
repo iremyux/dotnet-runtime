@@ -919,5 +919,170 @@ namespace System.IO.Compression.Tests
 
             await DisposeStream(async, readStream);
         }
+
+        [Theory]
+        [MemberData(nameof(Get_Booleans_Data))]
+        public static async Task OpenRaw_ReturnsCompressedBytes_Deflate(bool async)
+        {
+            byte[] originalData = new byte[4096];
+            Array.Fill(originalData, (byte)'A');
+
+            using var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                var entry = archive.CreateEntry("test.txt", CompressionLevel.Optimal);
+                using (var stream = entry.Open())
+                {
+                    stream.Write(originalData);
+                }
+            }
+
+            ms.Position = 0;
+            ZipArchive readArchive = await CreateZipArchive(async, ms, ZipArchiveMode.Read);
+            ZipArchiveEntry readEntry = readArchive.Entries[0];
+
+            Assert.Equal(ZipCompressionMethod.Deflate, readEntry.CompressionMethod);
+
+            using var rawStream = readEntry.OpenRaw();
+            using var rawMs = new MemoryStream();
+            rawStream.CopyTo(rawMs);
+            byte[] rawBytes = rawMs.ToArray();
+
+            Assert.Equal(readEntry.CompressedLength, rawBytes.Length);
+
+            using var decompressed = new MemoryStream();
+            using (var deflateStream = new DeflateStream(new MemoryStream(rawBytes), CompressionMode.Decompress))
+            {
+                deflateStream.CopyTo(decompressed);
+            }
+
+            Assert.Equal(originalData, decompressed.ToArray());
+
+            await DisposeZipArchive(async, readArchive);
+        }
+
+        [Theory]
+        [MemberData(nameof(Get_Booleans_Data))]
+        public static async Task OpenRaw_ReturnsUncompressedBytes_Stored(bool async)
+        {
+            byte[] originalData = "stored data"u8.ToArray();
+
+            using var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                var entry = archive.CreateEntry("test.txt", CompressionLevel.NoCompression);
+                using (var stream = entry.Open())
+                {
+                    stream.Write(originalData);
+                }
+            }
+
+            ms.Position = 0;
+            ZipArchive readArchive = await CreateZipArchive(async, ms, ZipArchiveMode.Read);
+            ZipArchiveEntry readEntry = readArchive.Entries[0];
+
+            Assert.Equal(ZipCompressionMethod.Stored, readEntry.CompressionMethod);
+
+            using var rawStream = readEntry.OpenRaw();
+            using var rawMs = new MemoryStream();
+            rawStream.CopyTo(rawMs);
+
+            Assert.Equal(originalData, rawMs.ToArray());
+
+            await DisposeZipArchive(async, readArchive);
+        }
+
+        [Theory]
+        [MemberData(nameof(Get_Booleans_Data))]
+        public static async Task OpenRaw_MatchesCompressedLength(bool async)
+        {
+            using var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                var entry = archive.CreateEntry("test.txt", CompressionLevel.Optimal);
+                using (var stream = entry.Open())
+                {
+                    stream.Write(new byte[1024]);
+                }
+            }
+
+            ms.Position = 0;
+            ZipArchive readArchive = await CreateZipArchive(async, ms, ZipArchiveMode.Read);
+            ZipArchiveEntry readEntry = readArchive.Entries[0];
+
+            using var rawStream = readEntry.OpenRaw();
+            using var rawMs = new MemoryStream();
+            rawStream.CopyTo(rawMs);
+
+            Assert.Equal(readEntry.CompressedLength, rawMs.Length);
+
+            await DisposeZipArchive(async, readArchive);
+        }
+
+        [Theory]
+        [MemberData(nameof(Get_Booleans_Data))]
+        public static async Task OpenRaw_EmptyEntry_ReturnsEmptyStream(bool async)
+        {
+            using var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                archive.CreateEntry("empty.txt");
+            }
+
+            ms.Position = 0;
+            ZipArchive readArchive = await CreateZipArchive(async, ms, ZipArchiveMode.Read);
+            ZipArchiveEntry readEntry = readArchive.Entries[0];
+
+            using var rawStream = readEntry.OpenRaw();
+            using var rawMs = new MemoryStream();
+            rawStream.CopyTo(rawMs);
+
+            Assert.Equal(0, rawMs.Length);
+
+            await DisposeZipArchive(async, readArchive);
+        }
+
+        [Fact]
+        public static async Task OpenRaw_ThrowsInCreateMode()
+        {
+            using var ms = new MemoryStream();
+            using var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true);
+            var entry = archive.CreateEntry("test.txt");
+
+            Assert.Throws<InvalidOperationException>(() => entry.OpenRaw());
+        }
+
+        [Fact]
+        public static async Task OpenRaw_ThrowsInUpdateMode()
+        {
+            using var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                archive.CreateEntry("test.txt");
+            }
+
+            ms.Position = 0;
+            using var updateArchive = new ZipArchive(ms, ZipArchiveMode.Update, leaveOpen: true);
+            var entry = updateArchive.Entries[0];
+
+            Assert.Throws<InvalidOperationException>(() => entry.OpenRaw());
+        }
+
+        [Fact]
+        public static void OpenRaw_ThrowsAfterArchiveDisposed()
+        {
+            var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                archive.CreateEntry("test.txt");
+            }
+
+            ms.Position = 0;
+            var readArchive = new ZipArchive(ms, ZipArchiveMode.Read);
+            var entry = readArchive.Entries[0];
+            readArchive.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => entry.OpenRaw());
+        }
     }
 }

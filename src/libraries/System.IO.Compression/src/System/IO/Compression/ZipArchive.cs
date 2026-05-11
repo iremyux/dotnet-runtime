@@ -286,6 +286,33 @@ namespace System.IO.Compression
         }
 
         /// <summary>
+        /// Creates an empty entry in the Zip archive with the specified entry name and compression method.
+        /// This overload allows specifying an arbitrary compression method to be recorded in the entry header,
+        /// which is useful when copying raw compressed data between zip archives.
+        /// </summary>
+        /// <exception cref="ArgumentException">entryName is a zero-length string.</exception>
+        /// <exception cref="ArgumentNullException">entryName is null.</exception>
+        /// <exception cref="NotSupportedException">The ZipArchive does not support writing.</exception>
+        /// <exception cref="ObjectDisposedException">The ZipArchive has already been closed.</exception>
+        /// <param name="entryName">A path relative to the root of the archive, indicating the name of the entry to be created.</param>
+        /// <param name="compressionMethod">The compression method to record in the entry header. The caller is responsible for writing correctly compressed data.</param>
+        /// <returns>A wrapper for the newly created file entry in the archive.</returns>
+        public ZipArchiveEntry CreateEntry(string entryName, ZipCompressionMethod compressionMethod)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(entryName);
+
+            if (_mode == ZipArchiveMode.Read)
+                throw new NotSupportedException(SR.CreateInReadMode);
+
+            ThrowIfDisposed();
+
+            var entry = new ZipArchiveEntry(this, entryName, compressionMethod);
+            AddEntry(entry);
+
+            return entry;
+        }
+
+        /// <summary>
         /// Releases the unmanaged resources used by ZipArchive and optionally finishes writing the archive and releases the managed resources.
         /// </summary>
         /// <param name="disposing">true to finish writing the archive and release unmanaged and managed resources, false to release only unmanaged resources.</param>

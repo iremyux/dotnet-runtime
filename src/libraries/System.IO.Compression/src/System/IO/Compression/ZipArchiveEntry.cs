@@ -110,6 +110,13 @@ namespace System.IO.Compression
             _generalPurposeBitFlag = MapDeflateCompressionOption(_generalPurposeBitFlag, _compressionLevel, CompressionMethod);
         }
 
+        // Initializes a ZipArchiveEntry instance for a new archive entry with a specified raw compression method.
+        internal ZipArchiveEntry(ZipArchive archive, string entryName, ZipCompressionMethod compressionMethod)
+            : this(archive, entryName)
+        {
+            CompressionMethod = compressionMethod;
+        }
+
         // Initializes a ZipArchiveEntry instance for a new archive entry.
         internal ZipArchiveEntry(ZipArchive archive, string entryName)
         {
@@ -431,6 +438,41 @@ namespace System.IO.Compression
                             return OpenInUpdateMode(loadExistingContent: true);
                     }
             }
+        }
+
+        /// <summary>
+        /// Opens the entry's raw compressed data stream without performing decompression or CRC validation.
+        /// </summary>
+        /// <returns>A read-only <see cref="Stream"/> that provides access to the raw compressed bytes of the entry.</returns>
+        /// <remarks>
+        /// <para>
+        /// This method allows access to the raw compressed bytes stored in the zip archive for this entry.
+        /// Unlike <see cref="Open()"/>, which decompresses the data automatically, this method returns the
+        /// data exactly as it is stored in the archive. This enables:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description>Using third-party decompression libraries for algorithms not natively supported (e.g., Zstandard, LZMA, BZip2).</description></item>
+        /// <item><description>Copying compressed data between zip archives without the overhead of decompression and recompression.</description></item>
+        /// </list>
+        /// <para>
+        /// The archive must be opened in <see cref="ZipArchiveMode.Read"/> mode.
+        /// Use <see cref="CompressionMethod"/> to determine which decompression algorithm to apply to the returned stream.
+        /// </para>
+        /// </remarks>
+        /// <exception cref="InvalidDataException">The entry is missing from the archive or is corrupt.</exception>
+        /// <exception cref="InvalidOperationException">The archive is not in Read mode.</exception>
+        /// <exception cref="ObjectDisposedException">The ZipArchive that this entry belongs to has been disposed.</exception>
+        public Stream OpenRaw()
+        {
+            ThrowIfInvalidArchive();
+
+            if (_archive.Mode != ZipArchiveMode.Read)
+                throw new InvalidOperationException(SR.ReadOnlyArchive);
+
+            ThrowIfNotOpenable(needToUncompress: false, needToLoadIntoMemory: false);
+
+            long offsetOfCompressedData = GetOffsetOfCompressedData();
+            return new SubReadStream(_archive.ArchiveStream, offsetOfCompressedData, _compressedSize);
         }
 
         /// <summary>

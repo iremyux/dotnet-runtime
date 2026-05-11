@@ -8,6 +8,8 @@ namespace System.IO.Compression
     /// </summary>
     /// <remarks>
     /// The values correspond to the compression method values described in the ZIP File Format Specification (APPNOTE.TXT section 4.4.5).
+    /// Not all values are natively supported for decompression by <see cref="ZipArchiveEntry.Open()"/>. Use <see cref="ZipArchiveEntry.OpenRaw"/>
+    /// to access raw compressed data for entries using unsupported compression methods.
     /// </remarks>
     public enum ZipCompressionMethod
     {
@@ -25,5 +27,20 @@ namespace System.IO.Compression
         /// The entry is compressed using the Deflate64 algorithm.
         /// </summary>
         Deflate64 = 0x9,
+
+        /// <summary>
+        /// The entry is compressed using the BZip2 algorithm.
+        /// </summary>
+        BZip2 = 0xC,
+
+        /// <summary>
+        /// The entry is compressed using the LZMA algorithm.
+        /// </summary>
+        Lzma = 0xE,
+
+        /// <summary>
+        /// The entry is compressed using the Zstandard algorithm.
+        /// </summary>
+        Zstd = 0x5D,
     }
 }

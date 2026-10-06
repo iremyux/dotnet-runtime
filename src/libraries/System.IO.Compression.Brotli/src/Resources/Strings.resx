@@ -148,12 +148,21 @@
   <data name="BrotliEncoder_InvalidSetParameter" xml:space="preserve">
     <value>The BrotliEncoder {0} can not be changed at current encoder state.</value>
   </data>
+  <data name="BrotliEncoder_LargeWindowQuality" xml:space="preserve">
+    <value>A window of {0} requires the Large Window Brotli extension, which the encoder does not use at the specified quality of {1}. Specify a quality greater than {2}.</value>
+  </data>
   <!-- BrotliDecoder -->
   <data name="BrotliDecoder_Create" xml:space="preserve">
     <value>Failed to create BrotliDecoder instance</value>
   </data>
   <data name="BrotliDecoder_Disposed" xml:space="preserve">
     <value>Can not access a closed Decoder.</value>
+  </data>
+  <data name="BrotliDecoder_InvalidSetParameter" xml:space="preserve">
+    <value>The BrotliDecoder {0} can not be changed at current decoder state.</value>
+  </data>
+  <data name="BrotliDecoder_MaxWindowLog2Exceeded" xml:space="preserve">
+    <value>The Brotli stream requires a window size of 2^{0} bytes, which is greater than the maxWindowLog2 of 2^{1} bytes allowed by the decompression options.</value>
   </data>
   <!-- BrotliStream.Compress -->
   <data name="BrotliStream_Compress_UnsupportedOperation" xml:space="preserve">

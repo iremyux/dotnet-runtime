@@ -16,13 +16,16 @@ namespace System.IO.Compression
 
         /// <summary>Initializes a new instance of the <see cref="System.IO.Compression.BrotliEncoder" /> structure using the specified quality and window.</summary>
         /// <param name="quality">A number representing quality of the Brotli compression. 0 is the minimum (no compression), 11 is the maximum.</param>
-        /// <param name="window">A number representing the encoder window bits. The minimum value is 10, and the maximum value is 24.</param>
+        /// <param name="window">A number representing the encoder window bits. The minimum value is 10, and the maximum value is 30.</param>
         /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="quality" /> is not between the minimum value of 0 and the maximum value of 11.
         /// -or-
-        /// <paramref name="window" /> is not between the minimum value of 10 and the maximum value of 24.</exception>
+        /// <paramref name="window" /> is not between the minimum value of 10 and the maximum value of 30.</exception>
+        /// <exception cref="System.ArgumentException"><paramref name="window" /> is greater than 24, which requires the "Large Window Brotli" extension, but <paramref name="quality" /> is too low for the encoder to use it.</exception>
         /// <exception cref="System.IO.IOException">Failed to create the <see cref="System.IO.Compression.BrotliEncoder" /> instance.</exception>
         public BrotliEncoder(int quality, int window)
         {
+            BrotliUtils.ValidateLargeWindowQuality(quality, window);
+
             _disposed = false;
             _state = Interop.Brotli.BrotliEncoderCreateInstance(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             if (_state.IsInvalid)
@@ -92,9 +95,14 @@ namespace System.IO.Compression
                 InitializeEncoder();
                 Debug.Assert(_state != null && !_state.IsInvalid && !_state.IsClosed);
             }
-            if (window < BrotliUtils.WindowBits_Min || window > BrotliUtils.WindowBits_Max)
+            if (window < BrotliUtils.WindowBits_Min || window > BrotliUtils.WindowBits_MaxLarge)
             {
-                throw new ArgumentOutOfRangeException(nameof(window), SR.Format(SR.BrotliEncoder_Window, window, BrotliUtils.WindowBits_Min, BrotliUtils.WindowBits_Max));
+                throw new ArgumentOutOfRangeException(nameof(window), SR.Format(SR.BrotliEncoder_Window, window, BrotliUtils.WindowBits_Min, BrotliUtils.WindowBits_MaxLarge));
+            }
+            if (window > BrotliUtils.WindowBits_Max &&
+                Interop.Brotli.BrotliEncoderSetParameter(_state, BrotliEncoderParameter.LargeWindow, 1) == Interop.BOOL.FALSE)
+            {
+                throw new InvalidOperationException(SR.Format(SR.BrotliEncoder_InvalidSetParameter, nameof(BrotliEncoderParameter.LargeWindow)));
             }
             if (Interop.Brotli.BrotliEncoderSetParameter(_state, BrotliEncoderParameter.LGWin, (uint)window) == Interop.BOOL.FALSE)
             {
@@ -196,7 +204,7 @@ namespace System.IO.Compression
         /// <param name="destination">When this method returns, a span of bytes where the compressed data is stored.</param>
         /// <param name="bytesWritten">When this method returns, the total number of bytes that were written to <paramref name="destination" />.</param>
         /// <param name="quality">A number representing quality of the Brotli compression. 0 is the minimum (no compression), 11 is the maximum.</param>
-        /// <param name="window">A number representing the encoder window bits. The minimum value is 10, and the maximum value is 24.</param>
+        /// <param name="window">A number representing the encoder window bits. The minimum value is 10, and the maximum value is 30.</param>
         /// <returns><see langword="true" /> if the compression operation was successful; <see langword="false" /> otherwise.</returns>
         public static bool TryCompress(ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten, int quality, int window)
         {
@@ -204,10 +212,12 @@ namespace System.IO.Compression
             {
                 throw new ArgumentOutOfRangeException(nameof(quality), SR.Format(SR.BrotliEncoder_Quality, quality, 0, BrotliUtils.Quality_Max));
             }
-            if (window < BrotliUtils.WindowBits_Min || window > BrotliUtils.WindowBits_Max)
+            if (window < BrotliUtils.WindowBits_Min || window > BrotliUtils.WindowBits_MaxLarge)
             {
-                throw new ArgumentOutOfRangeException(nameof(window), SR.Format(SR.BrotliEncoder_Window, window, BrotliUtils.WindowBits_Min, BrotliUtils.WindowBits_Max));
+                throw new ArgumentOutOfRangeException(nameof(window), SR.Format(SR.BrotliEncoder_Window, window, BrotliUtils.WindowBits_Min, BrotliUtils.WindowBits_MaxLarge));
             }
+
+            BrotliUtils.ValidateLargeWindowQuality(quality, window);
 
             unsafe
             {

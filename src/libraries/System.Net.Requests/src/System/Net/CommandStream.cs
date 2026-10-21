@@ -405,6 +405,13 @@ namespace System.Net
 
         private static void ReadCallback(IAsyncResult asyncResult)
         {
+            if (asyncResult.CompletedSynchronously)
+            {
+                // The issuing loop in ReceiveCommandResponseCallback handles this case itself,
+                // to avoid recursing back into ReceiveCommandResponseCallback from within BeginRead.
+                return;
+            }
+
             ReceiveState state = (ReceiveState)asyncResult.AsyncState!;
             try
             {
@@ -519,16 +526,24 @@ namespace System.Net
                     {
                         if (_isAsync)
                         {
-                            BeginRead(state.Buffer, 0, state.Buffer.Length, s_readCallbackDelegate, state);
-                            return null;
+                            IAsyncResult asyncResult = BeginRead(state.Buffer, 0, state.Buffer.Length, s_readCallbackDelegate, state);
+                            if (!asyncResult.CompletedSynchronously)
+                            {
+                                return null;
+                            }
+
+                            // The read completed synchronously; ReadCallback will not process it (see
+                            // the CompletedSynchronously check there), so finish it here instead.
+                            bytesRead = EndRead(asyncResult);
                         }
                         else
                         {
                             bytesRead = Read(state.Buffer, 0, state.Buffer.Length);
-                            if (bytesRead == 0)
-                                CloseSocket();
-                            ReceiveCommandResponseCallback(state, bytesRead);
                         }
+
+                        if (bytesRead == 0)
+                            CloseSocket();
+                        ReceiveCommandResponseCallback(state, bytesRead);
                     }
                     catch (IOException)
                     {
@@ -634,16 +649,26 @@ namespace System.Net
                     {
                         if (_isAsync)
                         {
-                            BeginRead(state.Buffer, 0, state.Buffer.Length, s_readCallbackDelegate, state);
-                            return;
+                            IAsyncResult asyncResult = BeginRead(state.Buffer, 0, state.Buffer.Length, s_readCallbackDelegate, state);
+                            if (!asyncResult.CompletedSynchronously)
+                            {
+                                return;
+                            }
+
+                            // The read completed synchronously. ReadCallback will not process it (see
+                            // the CompletedSynchronously check there), so finish it here by looping back
+                            // around instead of recursing through the callback; this avoids unbounded
+                            // stack growth when many reads complete synchronously in a row.
+                            bytesRead = EndRead(asyncResult);
                         }
                         else
                         {
                             bytesRead = Read(state.Buffer, 0, state.Buffer.Length);
-                            if (bytesRead == 0)
-                                CloseSocket();
-                            continue;
                         }
+
+                        if (bytesRead == 0)
+                            CloseSocket();
+                        continue;
                     }
                     catch (IOException)
                     {

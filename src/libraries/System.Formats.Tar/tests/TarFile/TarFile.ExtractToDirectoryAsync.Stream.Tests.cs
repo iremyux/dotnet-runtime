@@ -126,7 +126,7 @@ namespace System.Formats.Tar.Tests
                 Assert.True(File.Exists(symlinkPath));
 
                 FileInfo? fileInfo = new(symlinkPath);
-                Assert.Equal("../efb53921da3394806160641b72a2cbd34ca1a9a8345ac670a85a04ad3d0e3507.tar", fileInfo.LinkTarget);
+                Assert.Equal(Path.Join("..", "efb53921da3394806160641b72a2cbd34ca1a9a8345ac670a85a04ad3d0e3507.tar"), fileInfo.LinkTarget);
 
                 FileSystemInfo? symlinkTarget = File.ResolveLinkTarget(symlinkPath, returnFinalTarget: true);
                 Assert.True(File.Exists(symlinkTarget.FullName));

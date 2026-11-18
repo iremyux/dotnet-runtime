@@ -184,7 +184,7 @@ namespace System.Formats.Tar.Tests
         {
             using (TempDirectory root = new TempDirectory())
             {
-                string targetName = "file.txt";
+                string targetName = Path.Join(".", "file.txt");
                 string linkName = "link.txt";
                 string targetPath = Path.Join(root.Path, targetName);
                 string linkPath = Path.Join(root.Path, linkName);
@@ -212,7 +212,7 @@ namespace System.Formats.Tar.Tests
 
                         Assert.NotNull(entry);
                         Assert.Equal(linkName, entry.Name);
-                        Assert.Equal(targetName, entry.LinkName);
+                        Assert.Equal("./file.txt", entry.LinkName);
                         Assert.Equal(TarEntryType.SymbolicLink, entry.EntryType);
                         Assert.Null(entry.DataStream);
 

@@ -40,7 +40,7 @@ public partial class TarWriter_WriteEntryAsync_File_Tests : TarWriter_File_Base
             Assert.NotNull(entry);
             Assert.Equal(format, entry.Format);
             Assert.Equal(junctionPath, entry.Name);
-            Assert.Equal(targetPath, entry.LinkName);
+            Assert.Equal(targetPath.Replace('\\', '/'), entry.LinkName);
             Assert.Equal(TarEntryType.SymbolicLink, entry.EntryType);
             Assert.Null(entry.DataStream);
 

@@ -30,11 +30,27 @@ namespace System.Formats.Tar.Tests
             if(subDirectory != null)  Directory.CreateDirectory(sourceSubDirectory);
 
             File.Create(Path.Join(sourceDirectoryName, subDirectory, symlinkTargetPath)).Dispose();
-            File.CreateSymbolicLink(Path.Join(sourceSubDirectory, "linkToFile"), symlinkTargetPath);
+            File.CreateSymbolicLink(Path.Join(sourceSubDirectory, "linkToFile"), symlinkTargetPath.Replace('/', Path.DirectorySeparatorChar));
 
             TarFile.CreateFromDirectory(sourceDirectoryName, destinationArchive, includeBaseDirectory: false);
 
             using FileStream archiveStream = File.OpenRead(destinationArchive);
+            using (TarReader reader = new(archiveStream, leaveOpen: true))
+            {
+                TarEntry? symlinkEntry;
+                do
+                {
+                    symlinkEntry = reader.GetNextEntry();
+                }
+                while (symlinkEntry is not null && symlinkEntry.EntryType is not TarEntryType.SymbolicLink);
+
+                Assert.NotNull(symlinkEntry);
+                Assert.Equal(TarEntryFormat.Pax, symlinkEntry.Format);
+                Assert.Equal(symlinkTargetPath, symlinkEntry.LinkName);
+                Assert.Equal(symlinkTargetPath, ((PaxTarEntry)symlinkEntry).ExtendedAttributes[PaxEaLinkName]);
+            }
+
+            archiveStream.Position = 0;
             TarFile.ExtractToDirectory(archiveStream, destinationDirectoryName, overwriteFiles: true);
 
             string destinationSubDirectory = Path.Join(destinationDirectoryName, subDirectory);
@@ -42,7 +58,8 @@ namespace System.Formats.Tar.Tests
             Assert.True(File.Exists(symlinkPath));
 
             FileInfo? fileInfo = new(symlinkPath);
-            Assert.Equal(symlinkTargetPath, fileInfo.LinkTarget);
+            string expectedTargetPath = OperatingSystem.IsWindows() ? symlinkTargetPath.Replace('/', '\\') : symlinkTargetPath;
+            Assert.Equal(expectedTargetPath, fileInfo.LinkTarget);
 
             FileSystemInfo? symlinkTarget = File.ResolveLinkTarget(symlinkPath, returnFinalTarget: true);
             Assert.True(File.Exists(symlinkTarget.FullName));

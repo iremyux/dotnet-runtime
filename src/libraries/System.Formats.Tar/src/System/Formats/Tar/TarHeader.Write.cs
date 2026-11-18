@@ -193,7 +193,7 @@ namespace System.Formats.Tar
                 CollectExtendedAttributesFromStandardFieldsIfNeeded();
 
                 // Write the extended attributes entry into the archive first
-                await extendedAttributesHeader.WriteAsPaxExtendedAttributesCoreAsync<TAdapter>(archiveStream, buffer, ExtendedAttributes, isGea: false, globalExtendedAttributesEntryNumber: -1, cancellationToken).ConfigureAwait(false);
+                await extendedAttributesHeader.WriteAsPaxExtendedAttributesCoreAsync<TAdapter>(archiveStream, buffer, GetExtendedAttributesForWriting(), isGea: false, globalExtendedAttributesEntryNumber: -1, cancellationToken).ConfigureAwait(false);
                 buffer.Span.Clear();
 
                 // And then write the stored entry into the archive
@@ -205,7 +205,7 @@ namespace System.Formats.Tar
                 // Fill the current header's dict
                 CollectExtendedAttributesFromStandardFieldsIfNeeded();
                 // And pass the attributes to the preceding extended attributes header for writing
-                await extendedAttributesHeader.WriteAsPaxExtendedAttributesCoreAsync<TAdapter>(archiveStream, buffer, ExtendedAttributes, isGea: false, globalExtendedAttributesEntryNumber: -1, cancellationToken).ConfigureAwait(false);
+                await extendedAttributesHeader.WriteAsPaxExtendedAttributesCoreAsync<TAdapter>(archiveStream, buffer, GetExtendedAttributesForWriting(), isGea: false, globalExtendedAttributesEntryNumber: -1, cancellationToken).ConfigureAwait(false);
                 buffer.Span.Clear(); // Reset it to reuse it
 
                 // Second, we write this header as a normal one
@@ -265,9 +265,16 @@ namespace System.Formats.Tar
 
         private TarHeader GetGnuLongLinkMetadataHeader()
         {
-            Debug.Assert(_linkName != null);
-            MemoryStream dataStream = GetLongMetadataStream(_linkName);
+            MemoryStream dataStream = GetLongMetadataStream(GetLinkNameForWriting());
             return GetGnuLongMetadataHeader(dataStream, TarEntryType.LongLink);
+        }
+
+        private string GetLinkNameForWriting()
+        {
+            Debug.Assert(_linkName is not null);
+            return OperatingSystem.IsWindows() && _typeFlag is TarEntryType.SymbolicLink
+                ? _linkName.Replace('\\', '/')
+                : _linkName;
         }
 
         private TarHeader GetGnuLongPathMetadataHeader()
@@ -488,7 +495,7 @@ namespace System.Formats.Tar
 
             if (!string.IsNullOrEmpty(_linkName))
             {
-                ReadOnlySpan<char> linkName = _linkName;
+                ReadOnlySpan<char> linkName = GetLinkNameForWriting();
 
                 if (GetUtf8TextLength(linkName) > FieldLengths.LinkName)
                 {
@@ -736,6 +743,18 @@ namespace System.Formats.Tar
         private void CollectExtendedAttributesFromStandardFieldsIfNeeded(Dictionary<string, string> ea)
         {
             AddOrUpdateStandardFieldExtendedAttributes(ea, removeIfUnneeded: true);
+        }
+
+        private Dictionary<string, string> GetExtendedAttributesForWriting()
+        {
+            Dictionary<string, string> extendedAttributes = new(ExtendedAttributes);
+
+            if (OperatingSystem.IsWindows() && _typeFlag is TarEntryType.SymbolicLink)
+            {
+                extendedAttributes[PaxEaLinkName] = GetLinkNameForWriting();
+            }
+
+            return extendedAttributes;
         }
 
         // The checksum accumulator first adds up the byte values of eight space chars, then the final number

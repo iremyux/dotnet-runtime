@@ -61,17 +61,18 @@ namespace System.Formats.Tar.Tests
 
         public static IEnumerable<object[]> LinkNameRoundtripsTheoryData()
         {
+            string[] separatorNames = [@".\file", @"..\directory/file", @"\file", @"\\server\share\file"];
             foreach (bool unseekableStream in new[] { false, true })
             {
                 foreach (TarEntryType entryType in new[] { TarEntryType.SymbolicLink, TarEntryType.HardLink })
                 {
-                    foreach (string name in GetNamesNonAsciiTestData(NameCapabilities.Name).Concat(GetNamesPrefixedTestData(NameCapabilities.Name)))
+                    foreach (string name in GetNamesNonAsciiTestData(NameCapabilities.Name).Concat(GetNamesPrefixedTestData(NameCapabilities.Name)).Concat(separatorNames))
                     {
                         yield return new object[] { TarEntryFormat.V7, entryType, unseekableStream, name };
                         yield return new object[] { TarEntryFormat.Ustar, entryType, unseekableStream, name };
                     }
 
-                    foreach (string name in GetNamesNonAsciiTestData(NameCapabilities.Unlimited).Concat(GetNamesPrefixedTestData(NameCapabilities.Unlimited)))
+                    foreach (string name in GetNamesNonAsciiTestData(NameCapabilities.Unlimited).Concat(GetNamesPrefixedTestData(NameCapabilities.Unlimited)).Concat(separatorNames).Append(@"directory\" + new string('a', 101)))
                     {
                         yield return new object[] { TarEntryFormat.Pax, entryType, unseekableStream, name };
                         yield return new object[] { TarEntryFormat.Gnu, entryType, unseekableStream, name };
@@ -96,13 +97,19 @@ namespace System.Formats.Tar.Tests
                 writer.WriteEntry(entry);
             }
 
+            Assert.Equal(linkName, entry.LinkName);
+            if (entryFormat is TarEntryFormat.Pax)
+            {
+                Assert.Equal(linkName, ((PaxTarEntry)entry).ExtendedAttributes[PaxEaLinkName]);
+            }
             ms.Position = 0;
             using TarReader reader = new(s);
 
             entry = reader.GetNextEntry();
             Assert.Null(reader.GetNextEntry());
             Assert.Equal(name, entry.Name);
-            Assert.Equal(linkName, entry.LinkName);
+            string expectedLinkName = OperatingSystem.IsWindows() && entryType is TarEntryType.SymbolicLink ? linkName.Replace('\\', '/') : linkName;
+            Assert.Equal(expectedLinkName, entry.LinkName);
         }
 
         public static IEnumerable<object[]> UserNameGroupNameRoundtripsTheoryData()

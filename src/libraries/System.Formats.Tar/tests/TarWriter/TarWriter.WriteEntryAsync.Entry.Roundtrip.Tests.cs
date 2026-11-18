@@ -55,13 +55,19 @@ namespace System.Formats.Tar.Tests
                 await writer.WriteEntryAsync(entry);
             }
 
+            Assert.Equal(linkName, entry.LinkName);
+            if (entryFormat is TarEntryFormat.Pax)
+            {
+                Assert.Equal(linkName, ((PaxTarEntry)entry).ExtendedAttributes[PaxEaLinkName]);
+            }
             ms.Position = 0;
             await using TarReader reader = new(s);
 
             entry = await reader.GetNextEntryAsync();
             Assert.Null(await reader.GetNextEntryAsync());
             Assert.Equal(name, entry.Name);
-            Assert.Equal(linkName, entry.LinkName);
+            string expectedLinkName = OperatingSystem.IsWindows() && entryType is TarEntryType.SymbolicLink ? linkName.Replace('\\', '/') : linkName;
+            Assert.Equal(expectedLinkName, entry.LinkName);
         }
 
         public static IEnumerable<object[]> UserNameGroupNameRoundtripsAsyncTheoryData()

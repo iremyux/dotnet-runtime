@@ -589,7 +589,7 @@ namespace System.Formats.Tar
                 case TarEntryType.SymbolicLink:
                     Debug.Assert(!string.IsNullOrEmpty(linkTargetPath));
                     FileInfo link = new(filePath);
-                    link.CreateAsSymbolicLink(linkTargetPath);
+                    link.CreateAsSymbolicLink(OperatingSystem.IsWindows() ? linkTargetPath.Replace('/', '\\') : linkTargetPath);
                     break;
 
                 case TarEntryType.HardLink:
